@@ -1,4 +1,6 @@
 using infinitoBack.Data;
+using infinitoBack.Interfaces;
+using infinitoBack.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
+
 
 var app = builder.Build();
 
