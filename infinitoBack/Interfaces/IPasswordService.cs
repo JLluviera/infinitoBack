@@ -1,0 +1,8 @@
+﻿namespace infinitoBack.Interfaces
+{
+    public interface IPasswordService
+    {
+        string HashPassword(string password);
+        bool VerificarPassword(string password, string passwordHash);
+    }
+}
