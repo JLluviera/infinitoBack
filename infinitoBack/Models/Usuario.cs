@@ -13,7 +13,7 @@ namespace infinitoBack.Models
 
         public string MailUsuario { get; set; }
 
-        public string PasswordUsuario { get; set; }
+        public string PasswordUsuarioHash { get; set; }
 
         public string RolUsuario { get; set; }
 
