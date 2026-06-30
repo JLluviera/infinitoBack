@@ -44,7 +44,7 @@ public class UsuarioController : ControllerBase
     public async Task<IActionResult> RegistrarUsuario([FromBody] UsuarioRegistroDto usuarioARegistrar)
     {
         bool existe = await _context.Usuarios
-    .AnyAsync(usuario => usuario.MailUsuario == usuarioARegistrar.Mail);
+    .AnyAsync(usuario => usuario.Mail == usuarioARegistrar.Mail);
         if (existe)
         {
             return Conflict($"Ya existe un usuario con el correo {usuarioARegistrar.Mail}");
@@ -52,11 +52,11 @@ public class UsuarioController : ControllerBase
         Usuario usuario = new Usuario();
         string hash = _passwordService.HashPassword(usuarioARegistrar.Pasword);
 
-        usuario.NombreUsuario = usuarioARegistrar.Nombre;
-        usuario.ApellidoUsuario = usuarioARegistrar.Apellido;
-        usuario.MailUsuario = usuarioARegistrar.Mail;
-        usuario.PasswordUsuarioHash = hash;
-        usuario.RolUsuario = "Usuario";
+        usuario.Nombre = usuarioARegistrar.Nombre;
+        usuario.Apellido = usuarioARegistrar.Apellido;
+        usuario.Mail = usuarioARegistrar.Mail;
+        usuario.PasswordHash = hash;
+        usuario.Rol = "Usuario";
         await _context.Usuarios.AddAsync(usuario);
         await _context.SaveChangesAsync();
         return Ok("El usuario se registro correctamente");
@@ -85,9 +85,9 @@ public class UsuarioController : ControllerBase
         {
             return NotFound($"El usuario con id {id} no existe");
         }
-        usuario.NombreUsuario = usuarioModificado.Nombre;
-        usuario.ApellidoUsuario = usuarioModificado.Apellido;
-        usuario.MailUsuario = usuarioModificado.Mail;
+        usuario.Nombre = usuarioModificado.Nombre;
+        usuario.Apellido = usuarioModificado.Apellido;
+        usuario.Mail = usuarioModificado.Mail;
 
         await _context.SaveChangesAsync();
         return Ok($"El usuario con el id {id} fue modificado con exito ");

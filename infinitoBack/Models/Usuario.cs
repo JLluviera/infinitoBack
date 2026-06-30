@@ -5,17 +5,17 @@ namespace infinitoBack.Models
     public class Usuario
     {
         [Key]
-        public int IdUsuario { get; set; }
+        public int Id { get; set; }
 
-        public string NombreUsuario { get; set; }
+        public string Nombre { get; set; }
         
-        public string ApellidoUsuario { get; set; }
+        public string Apellido { get; set; }
 
-        public string MailUsuario { get; set; }
+        public string Mail { get; set; }
 
-        public string PasswordUsuarioHash { get; set; }
+        public string PasswordHash { get; set; }
 
-        public string RolUsuario { get; set; }
+        public string Rol { get; set; }
 
     }
 }
