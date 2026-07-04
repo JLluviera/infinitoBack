@@ -44,7 +44,8 @@ public class UsuarioController : ControllerBase
     public async Task<IActionResult> RegistrarUsuario([FromBody] UsuarioRegistroDto usuarioARegistrar)
     {
         bool existe = await _context.Usuarios
-    .AnyAsync(usuario => usuario.Mail == usuarioARegistrar.Mail);
+            .AnyAsync(usuario => usuario.Mail == usuarioARegistrar.Mail);
+       
         if (existe)
         {
             return Conflict($"Ya existe un usuario con el correo {usuarioARegistrar.Mail}");
@@ -91,6 +92,30 @@ public class UsuarioController : ControllerBase
 
         await _context.SaveChangesAsync();
         return Ok($"El usuario con el id {id} fue modificado con exito ");
+    }
+
+    [HttpPost("login")]
+
+    public async Task<IActionResult> Login([FromBody] UsuarioLoginDto usuarioLoginDto)
+    {
+        Usuario? usuario = await _context.Usuarios
+            .FirstOrDefaultAsync(usuario => usuario.Mail == usuarioLoginDto.Mail);
+
+        if (usuario == null)
+        {
+            return Unauthorized("Correo o contraseña incorrectos.");
+        }
+
+        bool passwordCorrecta = _passwordService.VerificarPassword(
+        usuarioLoginDto.Password,
+        usuario.PasswordHash);
+
+        if (!passwordCorrecta)
+        {
+            return Unauthorized("Correo o contraseña incorrectos.");
+        }
+
+        return Ok("Login correcto");
     }
 
 }
