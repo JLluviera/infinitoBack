@@ -1,24 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using infinitoBack.Data;
-using Microsoft.EntityFrameworkCore;
-using infinitoBack.Models;
+﻿using infinitoBack.Data;
 using infinitoBack.DTOs;
-using infinitoBack.Services;
-using Microsoft.IdentityModel.Tokens;
 using infinitoBack.Interfaces;
+using infinitoBack.Models;
+using infinitoBack.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace infinitoBack.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+
 public class UsuarioController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly IPasswordService _passwordService;
-    public UsuarioController(AppDbContext context, IPasswordService passwordService)
+    private readonly ITokenService _tokenService;
+    public UsuarioController(AppDbContext context, IPasswordService passwordService,ITokenService tokenService)
     {
         _context = context;
         _passwordService= passwordService;
+        _tokenService = tokenService;
     }
 
 
@@ -93,7 +97,7 @@ public class UsuarioController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok($"El usuario con el id {id} fue modificado con exito ");
     }
-
+    [AllowAnonymous]
     [HttpPost("login")]
 
     public async Task<IActionResult> Login([FromBody] UsuarioLoginDto usuarioLoginDto)
@@ -115,7 +119,12 @@ public class UsuarioController : ControllerBase
             return Unauthorized("Correo o contraseña incorrectos.");
         }
 
-        return Ok("Login correcto");
+        string token = _tokenService.GenerarToken(usuario);
+
+        return Ok(new
+        {
+            Token = token
+        });
     }
 
 }
