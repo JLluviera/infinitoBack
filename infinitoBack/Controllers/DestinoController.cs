@@ -95,4 +95,17 @@ public class DestinoController : ControllerBase
         return Ok(destinos);
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> ObtenerDestinoPorId(int id)
+    {
+        Destino? destino = await _context.Destinos.FindAsync(id);
+
+        if (destino == null)
+        {
+            return NotFound($"No se encontró ningún paquete con el id {id}");
+        }
+
+        return Ok(destino);
+    }
+
 }

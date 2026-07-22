@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
+using infinitoBack.Enum;
+using Microsoft.Identity.Client;
 
 namespace infinitoBack.Models
 {
@@ -7,12 +9,15 @@ namespace infinitoBack.Models
         public int Id { get; set; }
         public string Nombre { get; set; }
         public decimal Precio { get; set; }
-        public DateOnly FechaInicio { get; set; }
-        public DateOnly FechaFin {  get; set; }
-        
+        public decimal? Seña { get; set; }
+        public DateOnly FechaSalida { get; set; }
+        public int DuracionDias {  get; set; }
+        public string Descripcion { get; set; }
+        public TipoPaquete Tipo {  get; set; }
+
         public int DestinoId { get; set; }
         public Destino Destino { get; set; }
-
+        public List<Servicio> Servicios { get; set; }
 
     }
 }
