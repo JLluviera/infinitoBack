@@ -1,4 +1,4 @@
-﻿namespace infinitoBack.Data
+﻿namespace infinitoBack.DTOs
 {
     public class ServicioEditarDto
     {

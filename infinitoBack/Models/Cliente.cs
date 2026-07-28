@@ -6,17 +6,17 @@ namespace infinitoBack.Models
     public class Cliente
     {
         [Key]
-        public int IdCliente { get; set; }
+        public int Id { get; set; }
         [Required]
-        public string NombreCliente { get; set; }
+        public string Nombre { get; set; }
         [Required]
-        public string ApellidoCliente { get; set; }
+        public string Apellido { get; set; }
         [Required]
-        public int CiCliente { get; set; }
+        public int Ci { get; set; }
         [Required]
-        public DateOnly FechaNacCliente { get; set; }
-        public int TelCliente { get; set; }
+        public DateOnly FechaNacimiento { get; set; }
+        public string Telefono { get; set; }
 
-        public float SaldoCliente { get; set; }
+        public decimal Saldo { get; set; }
     }
 }
