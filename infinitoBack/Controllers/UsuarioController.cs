@@ -99,7 +99,6 @@ public class UsuarioController : ControllerBase
     }
     [AllowAnonymous]
     [HttpPost("login")]
-
     public async Task<IActionResult> Login([FromBody] UsuarioLoginDto usuarioLoginDto)
     {
         Usuario? usuario = await _context.Usuarios
