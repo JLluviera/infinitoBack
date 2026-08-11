@@ -13,5 +13,16 @@ namespace infinitoBack.Data
         public DbSet<Paquete> Paquetes { get; set; }
         public DbSet<Destino> Destinos { get; set; }
         public DbSet<Servicio> Servicios { get; set; }
+
+        public DbSet<Excursion> Excursiones { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Excursion>()
+                .HasOne(e => e.Destino)
+                .WithMany(d => d.Excursiones)
+                .HasForeignKey(e => e.DestinoId);
+
+        }
     }
 }
