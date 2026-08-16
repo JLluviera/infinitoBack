@@ -3,7 +3,9 @@ using infinitoBack.DTOs;
 using infinitoBack.Interfaces;
 using infinitoBack.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
+using infinitoBack.ResponseDTOs;
 
 namespace infinitoBack.Controllers
 {
@@ -23,16 +25,47 @@ namespace infinitoBack.Controllers
 
         // GET: api/<ExcursionesController>
         [HttpGet]
-        public List<Excursion> Get()
-        { 
-            return _context.Excursiones.ToList();
+        public List<ExcursionCrearDTO> Get()
+        {
+            List<ExcursionCrearDTO> excursionesResponse = _context.Excursiones.Select(e => new ExcursionCrearDTO
+            {
+                Nombre = e.Nombre,
+                CantLugares = e.CantLugares,
+                CantDias = e.CantDias,
+                FechaSalida = e.FechaSalida,
+                DestinoId = e.DestinoId
+            }).ToList();
+
+            return excursionesResponse;
         }
 
         // GET api/<ExcursionesController>/5
         [HttpGet("{id}")]
-        public Excursion Get(int id)
+        public ExcursionesResponseDTO Get(int id)
         {
-            Excursion? excursion = _context.Excursiones.Find(id);
+            ExcursionesResponseDTO? excursion = _context.Excursiones
+                                                .Include(e => e.Destino)
+                                                .Include(e => e.Paquetes)
+                                                .Select(e => new ExcursionesResponseDTO
+                                                {
+                                                    Id = e.Id,
+                                                    Nombre = e.Nombre,
+                                                    CantLugares = e.CantLugares,
+                                                    CantDias = e.CantDias,
+                                                    FechaSalida = e.FechaSalida,
+                                                    Destino = new DestinoCrearDto
+                                                    {
+                                                        Nombre = e.Destino.Nombre,
+                                                        Ciudad = e.Destino.Ciudad,
+                                                        Descripcion = e.Destino.Descripcion,
+                                                    },
+                                                    Paquetes = e.Paquetes.Select(p => new PaqueteResponseDTO
+                                                    {
+                                                        Nombre = p.Nombre,
+                                                        Precio = p.Precio
+                                                    }).ToList()
+                                                })
+                                                .FirstOrDefault(e => e.Id == id);
 
             if (excursion == null)
             {
