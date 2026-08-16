@@ -24,15 +24,16 @@ namespace infinitoBack.Data
                 .WithMany(d => d.Excursiones)
                 .HasForeignKey(e => e.DestinoId);
 
-            modelBuilder.Entity<Destino>()
-                .HasOne(d => d.Pais)
-                .WithMany(p => p.Destinos)
-                .HasForeignKey(d => d.IdPais);
-
             modelBuilder.Entity<Excursion>()
                 .HasMany(e => e.Paquetes)
                 .WithOne(p => p.Excursion)
                 .HasForeignKey(p => p.IdExcursion);
+
+            modelBuilder.Entity<Destino>()
+                .HasOne(d => d.Pais)
+                .WithMany(p => p.Destinos)
+                .HasForeignKey(d => d.IdPais);
+            
         }
     }
 }

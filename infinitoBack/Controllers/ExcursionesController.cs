@@ -139,6 +139,7 @@ namespace infinitoBack.Controllers
             excursion.FechaSalida = excursionMod.FechaSalida;
             excursion.DestinoId = excursionMod.DestinoId;
 
+            _context.Excursiones.Update(excursion);
             _context.SaveChanges();
 
             return Ok("Excursión actualizada correctamente");
