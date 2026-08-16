@@ -43,7 +43,7 @@ public class UsuarioController : ControllerBase
         }
         return Ok(usuario);
     }
-
+    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> RegistrarUsuario([FromBody] UsuarioRegistroDto usuarioARegistrar)
     {
