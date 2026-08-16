@@ -16,6 +16,8 @@ namespace infinitoBack.Data
 
         public DbSet<Excursion> Excursiones { get; set; }
 
+        public DbSet<Pais> Paises { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Excursion>()
@@ -23,6 +25,10 @@ namespace infinitoBack.Data
                 .WithMany(d => d.Excursiones)
                 .HasForeignKey(e => e.DestinoId);
 
+            modelBuilder.Entity<Destino>()
+                .HasOne(d => d.Pais)
+                .WithMany(p => p.Destinos)
+                .HasForeignKey(d => d.IdPais);
         }
     }
 }

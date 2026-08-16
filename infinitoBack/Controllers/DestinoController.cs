@@ -25,7 +25,7 @@ public class DestinoController : ControllerBase
         bool existe = await _context.Destinos.AnyAsync(destino =>
             destino.Nombre == destinoCrearDto.Nombre &&
             destino.Ciudad == destinoCrearDto.Ciudad &&
-            destino.Pais == destinoCrearDto.Pais);
+            destino.IdPais == destinoCrearDto.IdPais);
         if (existe)
         {
             return Conflict("Ya existe un destino con ese nombre en esa ciudad y país.");
@@ -35,7 +35,7 @@ public class DestinoController : ControllerBase
         {
             Nombre = destinoCrearDto.Nombre,
             Ciudad = destinoCrearDto.Ciudad,
-            Pais = destinoCrearDto.Pais,
+            IdPais = destinoCrearDto.IdPais,
             Descripcion = destinoCrearDto.Descripcion
         };
 
@@ -60,7 +60,7 @@ public class DestinoController : ControllerBase
             destino.Id != id &&
             destino.Nombre == destinoCrearDto.Nombre &&
             destino.Ciudad == destinoCrearDto.Ciudad &&
-            destino.Pais == destinoCrearDto.Pais);
+            destino.IdPais == destinoCrearDto.IdPais);
         if (existe)
         {
             return Conflict("Ya existe un destino con ese nombre en esa ciudad y país.");
@@ -69,7 +69,7 @@ public class DestinoController : ControllerBase
         destino.Nombre = destinoCrearDto.Nombre;
         destino.Descripcion = destinoCrearDto.Descripcion;
         destino.Ciudad = destinoCrearDto.Ciudad;
-        destino.Pais = destinoCrearDto.Pais;
+        destino.IdPais = destinoCrearDto.IdPais;
 
         await _context.SaveChangesAsync();
         return Ok($"El destino con el id {id} fue modificado con exito ");
