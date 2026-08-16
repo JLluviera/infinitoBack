@@ -15,6 +15,6 @@
         public int DestinoId { get; set; }
         public Destino Destino { get; set; }
 
-        public Excursion() { }
+        public List<Paquete> Paquetes { get; set; }
     }
 }

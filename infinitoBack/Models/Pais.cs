@@ -1,6 +1,4 @@
-﻿using infinitoBack.Migrations;
-
-namespace infinitoBack.Models
+﻿namespace infinitoBack.Models
 {
     public class Pais
     {

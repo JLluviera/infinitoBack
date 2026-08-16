@@ -22,21 +22,6 @@ namespace infinitoBack.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PaqueteServicio", b =>
-                {
-                    b.Property<int>("ServiciosId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("paquetesId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ServiciosId", "paquetesId");
-
-                    b.HasIndex("paquetesId");
-
-                    b.ToTable("PaqueteServicio");
-                });
-
             modelBuilder.Entity("infinitoBack.Models.Cliente", b =>
                 {
                     b.Property<int>("Id")
@@ -165,14 +150,8 @@ namespace infinitoBack.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DestinoId")
+                    b.Property<int>("IdExcursion")
                         .HasColumnType("int");
-
-                    b.Property<int>("DuracionDias")
-                        .HasColumnType("int");
-
-                    b.Property<DateOnly>("FechaSalida")
-                        .HasColumnType("date");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -184,35 +163,11 @@ namespace infinitoBack.Migrations
                     b.Property<decimal?>("Seña")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Tipo")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("DestinoId");
+                    b.HasIndex("IdExcursion");
 
                     b.ToTable("Paquetes");
-                });
-
-            modelBuilder.Entity("infinitoBack.Models.Servicio", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Servicios");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Usuario", b =>
@@ -248,21 +203,6 @@ namespace infinitoBack.Migrations
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("PaqueteServicio", b =>
-                {
-                    b.HasOne("infinitoBack.Models.Servicio", null)
-                        .WithMany()
-                        .HasForeignKey("ServiciosId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("infinitoBack.Models.Paquete", null)
-                        .WithMany()
-                        .HasForeignKey("paquetesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("infinitoBack.Models.Destino", b =>
                 {
                     b.HasOne("infinitoBack.Models.Pais", "Pais")
@@ -287,18 +227,23 @@ namespace infinitoBack.Migrations
 
             modelBuilder.Entity("infinitoBack.Models.Paquete", b =>
                 {
-                    b.HasOne("infinitoBack.Models.Destino", "Destino")
-                        .WithMany()
-                        .HasForeignKey("DestinoId")
+                    b.HasOne("infinitoBack.Models.Excursion", "Excursion")
+                        .WithMany("Paquetes")
+                        .HasForeignKey("IdExcursion")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Destino");
+                    b.Navigation("Excursion");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Destino", b =>
                 {
                     b.Navigation("Excursiones");
+                });
+
+            modelBuilder.Entity("infinitoBack.Models.Excursion", b =>
+                {
+                    b.Navigation("Paquetes");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Pais", b =>

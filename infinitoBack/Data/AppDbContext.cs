@@ -12,7 +12,6 @@ namespace infinitoBack.Data
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Paquete> Paquetes { get; set; }
         public DbSet<Destino> Destinos { get; set; }
-        public DbSet<Servicio> Servicios { get; set; }
 
         public DbSet<Excursion> Excursiones { get; set; }
 
@@ -29,6 +28,11 @@ namespace infinitoBack.Data
                 .HasOne(d => d.Pais)
                 .WithMany(p => p.Destinos)
                 .HasForeignKey(d => d.IdPais);
+
+            modelBuilder.Entity<Excursion>()
+                .HasMany(e => e.Paquetes)
+                .WithOne(p => p.Excursion)
+                .HasForeignKey(p => p.IdExcursion);
         }
     }
 }
