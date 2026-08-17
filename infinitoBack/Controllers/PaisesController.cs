@@ -1,7 +1,9 @@
 ﻿using infinitoBack.Data;
 using infinitoBack.DTOs;
+using infinitoBack.ResponseDTOs;
 using infinitoBack.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,17 +22,37 @@ namespace infinitoBack.Controllers
 
         // GET: api/<PaisesController>
         [HttpGet]
-        public List<Pais> Get()
+        public List<PaisCrearDTO> Get()
         {
-            return _context.Paises.ToList();
+            List<PaisCrearDTO> paisesResponse = _context.Paises.Select(p => new PaisCrearDTO
+            {
+                Nombre = p.NombrePais,
+                CodigoPais = p.CodigoPais
+            }).ToList();
+
+
+            return paisesResponse;
         }
 
         // GET api/<PaisesController>/5
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            Pais? pais = _context.Paises.Find(id);
-            
+            ResponsePaises? pais = _context.Paises
+                                    .Include(p => p.Destinos)
+                                    .Select(p => new ResponsePaises
+                                    {
+                                        Id = p.Id,
+                                        NombrePais = p.NombrePais,
+                                        CodigoPais = p.CodigoPais,
+                                        Destinos = p.Destinos.Select(d => new DestinoCrearDto
+                                                                        { Nombre = d.Nombre,
+                                                                          Ciudad = d.Ciudad
+
+                                        }).ToList()
+                                    })
+                                    .FirstOrDefault(p => p.Id == id);
+        
             if (pais == null) {
                 return NotFound("No se encontro el país");
             }
@@ -68,7 +90,7 @@ namespace infinitoBack.Controllers
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] PaisCrearDTO paisMod)
         {
-            Pais pais = _context.Paises.Find(id);
+            Pais? pais = _context.Paises.Find(id);
 
             if (pais == null) {
                 return NotFound("No se encontro el pais"); }
