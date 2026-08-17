@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using infinitoBack.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace infinitoBack.DTOs
 {
@@ -9,7 +10,7 @@ namespace infinitoBack.DTOs
         [Required]
         public string Ciudad { get; set; }
         [Required]
-        public string Pais { get; set; }
+        public int IdPais { get; set; }
         [Required]
         public string Descripcion { get; set; }
     }

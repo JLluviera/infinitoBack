@@ -12,8 +12,8 @@ using infinitoBack.Data;
 namespace infinitoBack.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260722000330_Configuracion-Relacion-Servicio-Paquete")]
-    partial class ConfiguracionRelacionServicioPaquete
+    [Migration("20260816033724_reincio")]
+    partial class reincio
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,50 +25,36 @@ namespace infinitoBack.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PaqueteServicio", b =>
-                {
-                    b.Property<int>("ServiciosId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("paquetesId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ServiciosId", "paquetesId");
-
-                    b.HasIndex("paquetesId");
-
-                    b.ToTable("PaqueteServicio");
-                });
-
             modelBuilder.Entity("infinitoBack.Models.Cliente", b =>
                 {
-                    b.Property<int>("IdCliente")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCliente"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ApellidoCliente")
+                    b.Property<string>("Apellido")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("CiCliente")
+                    b.Property<int>("Ci")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly>("FechaNacCliente")
+                    b.Property<DateOnly>("FechaNacimiento")
                         .HasColumnType("date");
 
-                    b.Property<string>("NombreCliente")
+                    b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<float>("SaldoCliente")
-                        .HasColumnType("real");
+                    b.Property<decimal>("Saldo")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("TelCliente")
-                        .HasColumnType("int");
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("IdCliente");
+                    b.HasKey("Id");
 
                     b.ToTable("Clientes");
                 });
@@ -89,17 +75,70 @@ namespace infinitoBack.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("IdPais")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Pais")
+                    b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IdPais");
+
                     b.ToTable("Destinos");
+                });
+
+            modelBuilder.Entity("infinitoBack.Models.Excursion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CantDias")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CantLugares")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DestinoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("FechaSalida")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DestinoId");
+
+                    b.ToTable("Excursiones");
+                });
+
+            modelBuilder.Entity("infinitoBack.Models.Pais", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodigoPais")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombrePais")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Paises");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Paquete", b =>
@@ -114,14 +153,8 @@ namespace infinitoBack.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DestinoId")
+                    b.Property<int>("IdExcursion")
                         .HasColumnType("int");
-
-                    b.Property<int>("DuracionDias")
-                        .HasColumnType("int");
-
-                    b.Property<DateOnly>("FechaSalida")
-                        .HasColumnType("date");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -133,35 +166,11 @@ namespace infinitoBack.Migrations
                     b.Property<decimal?>("Seña")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Tipo")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("DestinoId");
+                    b.HasIndex("IdExcursion");
 
                     b.ToTable("Paquetes");
-                });
-
-            modelBuilder.Entity("infinitoBack.Models.Servicio", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Servicios");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Usuario", b =>
@@ -197,25 +206,21 @@ namespace infinitoBack.Migrations
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("PaqueteServicio", b =>
+            modelBuilder.Entity("infinitoBack.Models.Destino", b =>
                 {
-                    b.HasOne("infinitoBack.Models.Servicio", null)
-                        .WithMany()
-                        .HasForeignKey("ServiciosId")
+                    b.HasOne("infinitoBack.Models.Pais", "Pais")
+                        .WithMany("Destinos")
+                        .HasForeignKey("IdPais")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("infinitoBack.Models.Paquete", null)
-                        .WithMany()
-                        .HasForeignKey("paquetesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Pais");
                 });
 
-            modelBuilder.Entity("infinitoBack.Models.Paquete", b =>
+            modelBuilder.Entity("infinitoBack.Models.Excursion", b =>
                 {
                     b.HasOne("infinitoBack.Models.Destino", "Destino")
-                        .WithMany("Paquetes")
+                        .WithMany("Excursiones")
                         .HasForeignKey("DestinoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -223,9 +228,30 @@ namespace infinitoBack.Migrations
                     b.Navigation("Destino");
                 });
 
+            modelBuilder.Entity("infinitoBack.Models.Paquete", b =>
+                {
+                    b.HasOne("infinitoBack.Models.Excursion", "Excursion")
+                        .WithMany("Paquetes")
+                        .HasForeignKey("IdExcursion")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Excursion");
+                });
+
             modelBuilder.Entity("infinitoBack.Models.Destino", b =>
                 {
+                    b.Navigation("Excursiones");
+                });
+
+            modelBuilder.Entity("infinitoBack.Models.Excursion", b =>
+                {
                     b.Navigation("Paquetes");
+                });
+
+            modelBuilder.Entity("infinitoBack.Models.Pais", b =>
+                {
+                    b.Navigation("Destinos");
                 });
 #pragma warning restore 612, 618
         }

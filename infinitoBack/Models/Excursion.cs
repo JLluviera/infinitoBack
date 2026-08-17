@@ -7,6 +7,7 @@ namespace infinitoBack.Models
     public class Excursion
     {
         public int Id { get; set; }
+
         public string Nombre { get; set; }
         public decimal Precio { get; set; }
         public decimal? Seña { get; set; }
@@ -19,5 +20,6 @@ namespace infinitoBack.Models
         public Destino Destino { get; set; }
         public List<Servicio> Servicios { get; set; }
 
+        public List<Paquete> Paquetes { get; set; }
     }
 }

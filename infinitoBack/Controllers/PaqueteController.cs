@@ -27,11 +27,11 @@ public class PaqueteController : ControllerBase
         {
             return Conflict($"Ya existe un paquete con el nombre {paqueteCrearDto.Nombre}");
         }
-        bool destinoExiste = await _context.Destinos.AnyAsync(destino => destino.Id == paqueteCrearDto.DestinoId);
+        bool excursionExiste = await _context.Excursiones.AnyAsync(e=> e.Id == paqueteCrearDto.IdExcursion);
 
-        if (!destinoExiste)
+        if (!excursionExiste)
         {
-            return BadRequest("El destino seleccionado no existe.");
+            return BadRequest("La excursión seleccionada no existe.");
         }
 
         Paquete paquete = new Paquete()
@@ -39,11 +39,8 @@ public class PaqueteController : ControllerBase
             Nombre = paqueteCrearDto.Nombre,
             Precio = paqueteCrearDto.Precio,
             Seña = paqueteCrearDto.Seña,
-            FechaSalida = paqueteCrearDto.FechaSalida,
-            DuracionDias = paqueteCrearDto.DuracionDias,
             Descripcion = paqueteCrearDto.Descripcion,
-            Tipo = paqueteCrearDto.Tipo,
-            DestinoId = paqueteCrearDto.DestinoId
+            IdExcursion = paqueteCrearDto.IdExcursion
         };
 
         await _context.Paquetes.AddAsync(paquete);
@@ -59,21 +56,17 @@ public class PaqueteController : ControllerBase
         {
             return NotFound($"No se encontro ningun paquete con el id {id}");
         }
-        bool destinoExiste = await _context.Destinos.AnyAsync(destino => destino.Id == paqueteModificado.DestinoId);
+        bool excursionExiste = await _context.Excursiones.AnyAsync(e => e.Id == paqueteModificado.IdExcursion);
 
-        if (!destinoExiste)
+        if (!excursionExiste)
         {
-            return BadRequest("El destino seleccionado no existe.");
+            return BadRequest("La excursión seleccionada no existe.");
         }
 
-        paquete.DuracionDias = paqueteModificado.DuracionDias;
         paquete.Seña = paqueteModificado.Seña;
-        paquete.DestinoId = paqueteModificado.DestinoId;
         paquete.Nombre = paqueteModificado.Nombre;
         paquete.Precio = paqueteModificado.Precio;
-        paquete.FechaSalida = paqueteModificado.FechaSalida;
         paquete.Descripcion = paqueteModificado.Descripcion;
-        paquete.Tipo = paqueteModificado.Tipo;
 
         await _context.SaveChangesAsync();
         return Ok($"El paquete se modifico correctamente");
