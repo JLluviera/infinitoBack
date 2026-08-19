@@ -8,7 +8,7 @@ namespace infinitoBack.ResponseDTOs
     {
         public int Id { get; set; }
 
-        public string Nombre { get; set; }
+        public string? Nombre { get; set; }
 
         public int CantLugares { get; set; }
 
@@ -16,8 +16,8 @@ namespace infinitoBack.ResponseDTOs
 
         public DateOnly FechaSalida { get; set; }
 
-        public DestinoCrearDto Destino { get; set; }
+        public DestinoCrearDto? Destino { get; set; }
 
-        public List<PaqueteResponseDTO> Paquetes { get; set; }
+        public List<PaqueteResponseDTO>? Paquetes { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 using infinitoBack.ResponseDTOs;
 
+
 namespace infinitoBack.Controllers
 {
     [Route("api/[controller]")]
@@ -25,13 +26,13 @@ namespace infinitoBack.Controllers
 
         // GET: api/<ExcursionesController>
         [HttpGet]
-        public List<ExcursionCrearDTO> Get()
+        public List<ExcursionCrearDto> Get()
         {
-            List<ExcursionCrearDTO> excursionesResponse = _context.Excursiones.Select(e => new ExcursionCrearDTO
+            List<ExcursionCrearDto> excursionesResponse = _context.Excursiones.Select(e => new ExcursionCrearDto
             {
                 Nombre = e.Nombre,
                 CantLugares = e.CantLugares,
-                CantDias = e.CantDias,
+                CantDias = e.DuracionDias,
                 FechaSalida = e.FechaSalida,
                 DestinoId = e.DestinoId
             }).ToList();
@@ -51,19 +52,19 @@ namespace infinitoBack.Controllers
                                                     Id = e.Id,
                                                     Nombre = e.Nombre,
                                                     CantLugares = e.CantLugares,
-                                                    CantDias = e.CantDias,
+                                                    CantDias = e.DuracionDias,
                                                     FechaSalida = e.FechaSalida,
                                                     Destino = new DestinoCrearDto
                                                     {
-                                                        Nombre = e.Destino.Nombre,
+                                                        Nombre = e.Destino!.Nombre,
                                                         Ciudad = e.Destino.Ciudad,
                                                         Descripcion = e.Destino.Descripcion,
                                                     },
-                                                    Paquetes = e.Paquetes.Select(p => new PaqueteResponseDTO
+                                                    Paquetes = e.Paquetes!.Select(p => new PaqueteResponseDTO
                                                     {
                                                         Nombre = p.Nombre,
                                                         Precio = p.Precio
-                                                    }).ToList()
+                                                    }).ToList() ?? null
                                                 })
                                                 .FirstOrDefault(e => e.Id == id);
 
@@ -77,7 +78,7 @@ namespace infinitoBack.Controllers
 
         // POST api/<ExcursionesController>
         [HttpPost]
-        public IActionResult Post([FromBody] ExcursionCrearDTO excursion)
+        public IActionResult Post([FromBody] ExcursionCrearDto excursion)
         {
             if (excursion == null)
             {
@@ -110,9 +111,9 @@ namespace infinitoBack.Controllers
 
             Excursion nuevaExcursion = new Excursion();
 
-            nuevaExcursion.Nombre = excursion.Nombre;
+            nuevaExcursion.Nombre = excursion.Nombre ?? string.Empty;
             nuevaExcursion.CantLugares = excursion.CantLugares;
-            nuevaExcursion.CantDias = excursion.CantDias;
+            nuevaExcursion.DuracionDias = excursion.CantDias;
             nuevaExcursion.FechaSalida = excursion.FechaSalida;
             nuevaExcursion.DestinoId = excursion.DestinoId;
             
@@ -147,7 +148,7 @@ namespace infinitoBack.Controllers
                 return BadRequest("La cantidad de lugares debe ser mayor a cero");
 
             }
-            else if (excursionMod.CantDias <= 0)
+            else if (excursionMod.DuracionDias <= 0)
             {
                 return BadRequest("La cantidad de días debe ser mayor a cero");
 
@@ -168,7 +169,7 @@ namespace infinitoBack.Controllers
 
             excursion.Nombre = excursionMod.Nombre;
             excursion.CantLugares = excursionMod.CantLugares;
-            excursion.CantDias = excursionMod.CantDias;
+            excursion.DuracionDias = excursionMod.DuracionDias;
             excursion.FechaSalida = excursionMod.FechaSalida;
             excursion.DestinoId = excursionMod.DestinoId;
 
