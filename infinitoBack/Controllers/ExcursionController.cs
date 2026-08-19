@@ -40,9 +40,8 @@ public class ExcursionController : ControllerBase
             Precio = ExcursionCrearDto.Precio,
             Seña = ExcursionCrearDto.Seña,
             FechaSalida = ExcursionCrearDto.FechaSalida,
-            DuracionDias = ExcursionCrearDto.DuracionDias,
+            DuracionDias = ExcursionCrearDto.CantDias,
             Descripcion = ExcursionCrearDto.Descripcion,
-            Tipo = ExcursionCrearDto.Tipo,
             DestinoId = ExcursionCrearDto.DestinoId
         };
 
@@ -66,14 +65,13 @@ public class ExcursionController : ControllerBase
             return BadRequest("El destino seleccionado no existe.");
         }
 
-        Excursion.DuracionDias = ExcursionModificado.DuracionDias;
+        Excursion.DuracionDias = ExcursionModificado.CantDias;
         Excursion.Seña = ExcursionModificado.Seña;
         Excursion.DestinoId = ExcursionModificado.DestinoId;
         Excursion.Nombre = ExcursionModificado.Nombre;
         Excursion.Precio = ExcursionModificado.Precio;
         Excursion.FechaSalida = ExcursionModificado.FechaSalida;
         Excursion.Descripcion = ExcursionModificado.Descripcion;
-        Excursion.Tipo = ExcursionModificado.Tipo;
 
         await _context.SaveChangesAsync();
         return Ok($"El Excursion se modifico correctamente");

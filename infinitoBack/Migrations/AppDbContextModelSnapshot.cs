@@ -94,21 +94,29 @@ namespace infinitoBack.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CantDias")
-                        .HasColumnType("int");
-
                     b.Property<int>("CantLugares")
                         .HasColumnType("int");
 
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("DestinoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DuracionDias")
                         .HasColumnType("int");
 
                     b.Property<DateOnly>("FechaSalida")
                         .HasColumnType("date");
 
                     b.Property<string>("Nombre")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Precio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("Seña")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -126,11 +134,9 @@ namespace infinitoBack.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CodigoPais")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NombrePais")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");

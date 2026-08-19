@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace infinitoBack.Migrations
 {
     /// <inheritdoc />
-    public partial class reincio : Migration
+    public partial class reinicio1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,8 +35,8 @@ namespace infinitoBack.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    NombrePais = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CodigoPais = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    NombrePais = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CodigoPais = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -88,10 +88,13 @@ namespace infinitoBack.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CantLugares = table.Column<int>(type: "int", nullable: false),
-                    CantDias = table.Column<int>(type: "int", nullable: false),
+                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Precio = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Seña = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     FechaSalida = table.Column<DateOnly>(type: "date", nullable: false),
+                    DuracionDias = table.Column<int>(type: "int", nullable: false),
+                    CantLugares = table.Column<int>(type: "int", nullable: false),
+                    Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DestinoId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
