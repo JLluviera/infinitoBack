@@ -98,7 +98,37 @@ public class DestinoController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> ObtenerDestinoPorId(int id)
     {
-        Destino? destino = await _context.Destinos.FindAsync(id);
+        Destino? destino = await _context.Destinos
+                                        .Include(d => d.Excursiones)
+                                        .Include(d => d.Pais)
+                                        .Select(d => new Destino
+                                        {
+                                            Id = d.Id,
+                                            Nombre = d.Nombre,
+                                            Ciudad = d.Ciudad,
+                                            IdPais = d.IdPais,
+                                            Descripcion = d.Descripcion,
+                                            Pais = new Pais
+                                            {
+                                                NombrePais = d.Pais.NombrePais,
+                                                CodigoPais = d.Pais.CodigoPais,
+                                                Destinos = null
+                                            },
+                                            Excursiones = d.Excursiones.Select(e => new Excursion
+                                            {
+                                                Id = e.Id,
+                                                Nombre = e.Nombre,
+                                                Descripcion = e.Descripcion,
+                                                Precio = e.Precio,
+                                                Seña = e.Seña,
+                                                FechaSalida = e.FechaSalida,
+                                                DuracionDias = e.DuracionDias,
+                                                CantLugares = e.CantLugares,
+                                                DestinoId = e.DestinoId,
+                                                Paquetes = null
+                                            }).ToList()
+                                        })
+                                        .FirstOrDefaultAsync(d => d.Id == id);
 
         if (destino == null)
         {

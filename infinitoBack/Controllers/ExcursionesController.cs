@@ -54,9 +54,9 @@ namespace infinitoBack.Controllers
                                                     CantLugares = e.CantLugares,
                                                     CantDias = e.DuracionDias,
                                                     FechaSalida = e.FechaSalida,
-                                                    Destino = new DestinoCrearDto
+                                                    Destino = e.Destino == null ? null : new DestinoCrearDto
                                                     {
-                                                        Nombre = e.Destino!.Nombre,
+                                                        Nombre = e.Destino.Nombre,
                                                         Ciudad = e.Destino.Ciudad,
                                                         Descripcion = e.Destino.Descripcion,
                                                     },
