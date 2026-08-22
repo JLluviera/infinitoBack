@@ -2,7 +2,7 @@
 
 namespace infinitoBack.DTOs
 {
-    public class ExcursionCrearDTO
+    public class ExcursionResponseDTO
     {
         public string Nombre { get; set; }
 
