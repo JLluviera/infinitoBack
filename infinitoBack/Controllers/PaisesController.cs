@@ -22,14 +22,16 @@ namespace infinitoBack.Controllers
 
         // GET: api/<PaisesController>
         [HttpGet]
-        public List<PaisCrearDTO> Get()
+        public List<ResponsePaises> Get()
         {
-            List<PaisCrearDTO> paisesResponse = _context.Paises.Select(p => new PaisCrearDTO
-            {
-                Nombre = p.NombrePais,
-                CodigoPais = p.CodigoPais
-            }).ToList();
-
+            List<ResponsePaises> paisesResponse = _context.Paises
+                .Select(p => new ResponsePaises
+                {
+                    Id = p.Id,
+                    NombrePais = p.NombrePais,
+                    CodigoPais = p.CodigoPais
+                })
+                .ToList();
 
             return paisesResponse;
         }

@@ -75,7 +75,7 @@ public class DestinoController : ControllerBase
         return Ok($"El destino con el id {id} fue modificado con exito ");
     }
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     public async Task<ActionResult> Borrar(int id)
     {
         Destino? destino = await _context.Destinos.FindAsync(id);

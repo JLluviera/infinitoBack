@@ -2,7 +2,7 @@
 
 namespace infinitoBack.DTOs
 {
-    public class ExcursionCrearDto
+    public class ExcursionResponseDTO
     {
         public string? Nombre { get; set; }
         public decimal Precio { get; set; }

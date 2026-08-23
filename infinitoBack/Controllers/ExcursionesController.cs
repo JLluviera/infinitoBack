@@ -26,9 +26,9 @@ namespace infinitoBack.Controllers
 
         // GET: api/<ExcursionesController>
         [HttpGet]
-        public List<ExcursionCrearDto> Get()
+        public List<ExcursionResponseDTO> Get()
         {
-            List<ExcursionCrearDto> excursionesResponse = _context.Excursiones.Select(e => new ExcursionCrearDto
+            List<ExcursionResponseDTO> excursionesResponse = _context.Excursiones.Select(e => new ExcursionResponseDTO
             {
                 Nombre = e.Nombre,
                 CantLugares = e.CantLugares,
@@ -78,7 +78,7 @@ namespace infinitoBack.Controllers
 
         // POST api/<ExcursionesController>
         [HttpPost]
-        public IActionResult Post([FromBody] ExcursionCrearDto excursion)
+        public IActionResult Post([FromBody] ExcursionResponseDTO excursion)
         {
             if (excursion == null)
             {
