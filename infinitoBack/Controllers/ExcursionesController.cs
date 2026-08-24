@@ -32,7 +32,7 @@ namespace infinitoBack.Controllers
             {
                 Nombre = e.Nombre,
                 CantLugares = e.CantLugares,
-                CantDias = e.DuracionDias,
+                CantDias = e.CantDias,
                 FechaSalida = e.FechaSalida,
                 DestinoId = e.DestinoId
             }).ToList();
@@ -52,7 +52,7 @@ namespace infinitoBack.Controllers
                                                     Id = e.Id,
                                                     Nombre = e.Nombre,
                                                     CantLugares = e.CantLugares,
-                                                    CantDias = e.DuracionDias,
+                                                    CantDias = e.CantDias,
                                                     FechaSalida = e.FechaSalida,
                                                     Destino = e.Destino == null ? null : new DestinoCrearDto
                                                     {
@@ -113,7 +113,7 @@ namespace infinitoBack.Controllers
 
             nuevaExcursion.Nombre = excursion.Nombre ?? string.Empty;
             nuevaExcursion.CantLugares = excursion.CantLugares;
-            nuevaExcursion.DuracionDias = excursion.CantDias;
+            nuevaExcursion.CantDias = excursion.CantDias;
             nuevaExcursion.FechaSalida = excursion.FechaSalida;
             nuevaExcursion.DestinoId = excursion.DestinoId;
             
@@ -148,7 +148,7 @@ namespace infinitoBack.Controllers
                 return BadRequest("La cantidad de lugares debe ser mayor a cero");
 
             }
-            else if (excursionMod.DuracionDias <= 0)
+            else if (excursionMod.CantDias <= 0)
             {
                 return BadRequest("La cantidad de días debe ser mayor a cero");
 
@@ -169,7 +169,7 @@ namespace infinitoBack.Controllers
 
             excursion.Nombre = excursionMod.Nombre;
             excursion.CantLugares = excursionMod.CantLugares;
-            excursion.DuracionDias = excursionMod.DuracionDias;
+            excursion.CantDias = excursionMod.CantDias;
             excursion.FechaSalida = excursionMod.FechaSalida;
             excursion.DestinoId = excursionMod.DestinoId;
 

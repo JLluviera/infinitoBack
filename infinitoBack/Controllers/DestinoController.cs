@@ -118,11 +118,8 @@ public class DestinoController : ControllerBase
                                             {
                                                 Id = e.Id,
                                                 Nombre = e.Nombre,
-                                                Descripcion = e.Descripcion,
-                                                Precio = e.Precio,
-                                                Seña = e.Seña,
                                                 FechaSalida = e.FechaSalida,
-                                                DuracionDias = e.DuracionDias,
+                                                CantDias = e.CantDias,
                                                 CantLugares = e.CantLugares,
                                                 DestinoId = e.DestinoId,
                                                 Paquetes = null
