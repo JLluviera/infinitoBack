@@ -85,7 +85,7 @@ namespace infinitoBack.Controllers
 
         // POST api/<ExcursionesController>
         [HttpPost]
-        public IActionResult Post([FromBody] ExcursionResponseDTO excursion)
+        public async Task<IActionResult> Post([FromBody] ExcursionResponseDTO excursion)
         {
             if (excursion == null)
             {
@@ -125,9 +125,9 @@ namespace infinitoBack.Controllers
             nuevaExcursion.DestinoId = excursion.DestinoId;
             
             _context.Excursiones.Add(nuevaExcursion);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            return Ok(nuevaExcursion);
+            return Ok("La Excursion se creo correctamente");
         }
             // PUT api/<ExcursionesController>/5
         [HttpPut("{id}")]
