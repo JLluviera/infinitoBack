@@ -25,19 +25,26 @@ namespace infinitoBack.Controllers
 
 
         // GET: api/<ExcursionesController>
-        [HttpGet]
-        public List<ExcursionResponseDTO> Get()
-        {
-            List<ExcursionResponseDTO> excursionesResponse = _context.Excursiones.Select(e => new ExcursionResponseDTO
-            {
-                Nombre = e.Nombre,
-                CantLugares = e.CantLugares,
-                CantDias = e.CantDias,
-                FechaSalida = e.FechaSalida,
-                DestinoId = e.DestinoId
-            }).ToList();
+        //[HttpGet]
+        //public List<ExcursionResponseDTO> Get()
+        //{
+        //    List<ExcursionResponseDTO> excursionesResponse = _context.Excursiones.Select(e => new ExcursionResponseDTO
+        //    {
+        //        Nombre = e.Nombre,
+        //        CantLugares = e.CantLugares,
+        //        CantDias = e.CantDias,
+        //        FechaSalida = e.FechaSalida,
+        //        DestinoId = e.DestinoId
+        //    }).ToList();
 
-            return excursionesResponse;
+        //    return excursionesResponse;
+        //}
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            List<Excursion> excursiones = await _context.Excursiones.ToListAsync();
+            return Ok(excursiones);
         }
 
         // GET api/<ExcursionesController>/5
@@ -120,11 +127,11 @@ namespace infinitoBack.Controllers
             _context.Excursiones.Add(nuevaExcursion);
             _context.SaveChanges();
 
-            return Ok("Excursión creada correctamente");
+            return Ok(nuevaExcursion);
         }
             // PUT api/<ExcursionesController>/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Excursion excursionMod)
+        public IActionResult Put(int id, [FromBody] ExcursionResponseDTO excursionMod)
         {
             if ( id == 0 )
             {

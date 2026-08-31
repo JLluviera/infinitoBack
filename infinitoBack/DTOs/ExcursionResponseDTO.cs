@@ -4,9 +4,8 @@ namespace infinitoBack.DTOs
 {
     public class ExcursionResponseDTO
     {
+        public int Id { get; set; }
         public string? Nombre { get; set; }
-        public decimal Precio { get; set; }
-        public decimal? Seña { get; set; }
         public DateOnly FechaSalida { get; set; } 
         public int CantDias { get; set; }
 
