@@ -20,33 +20,31 @@ public class DestinoController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CrearDestino([FromBody] DestinoCrearDto destinoCrearDto)
+public async Task<IActionResult> CrearDestino([FromBody] DestinoCrearDto destinoCrearDto)
+{
+    bool existe = await _context.Destinos.AnyAsync(destino =>
+        destino.Nombre == destinoCrearDto.Nombre &&
+        destino.Ciudad == destinoCrearDto.Ciudad &&
+        destino.IdPais == destinoCrearDto.IdPais);
+
+    if (existe)
     {
-        bool existe = await _context.Destinos.AnyAsync(destino =>
-            destino.Nombre == destinoCrearDto.Nombre &&
-            destino.Ciudad == destinoCrearDto.Ciudad &&
-            destino.IdPais == destinoCrearDto.IdPais);
-        if (existe)
-        {
-            return Conflict("Ya existe un destino con ese nombre en esa ciudad y país.");
-        }
-
-        Destino destino = new Destino
-        {
-            Nombre = destinoCrearDto.Nombre,
-            Ciudad = destinoCrearDto.Ciudad,
-            IdPais = destinoCrearDto.IdPais,
-            Descripcion = destinoCrearDto.Descripcion
-        };
-
-        await _context.Destinos.AddAsync(destino);
-        await _context.SaveChangesAsync();
-
-
-        await _context.Destinos.AddAsync(destino);
-        await _context.SaveChangesAsync();
-        return Ok("El destino se creo correctamente");
+        return Conflict("Ya existe un destino con ese nombre en esa ciudad y país.");
     }
+
+    Destino destino = new Destino
+    {
+        Nombre = destinoCrearDto.Nombre,
+        Ciudad = destinoCrearDto.Ciudad,
+        IdPais = destinoCrearDto.IdPais,
+        Descripcion = destinoCrearDto.Descripcion
+    };
+
+    await _context.Destinos.AddAsync(destino);
+    await _context.SaveChangesAsync();
+
+    return Ok("El destino se creó correctamente");
+}
 
     [HttpPut("{id}")]
     public async Task<IActionResult> EditarDestino(int id, [FromBody] DestinoCrearDto destinoCrearDto)

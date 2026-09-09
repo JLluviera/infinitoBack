@@ -7,5 +7,7 @@
         public int Ci { get; set; }
         public DateOnly FechaNacimiento { get; set; }
         public string Telefono { get; set; }
+        public string Direccion {get;set; }
+
     }
 }
