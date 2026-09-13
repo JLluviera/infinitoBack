@@ -10,5 +10,29 @@ namespace infinitoBack.Data
         public DbSet<Usuario> Usuarios { get; set; }
 
         public DbSet<Cliente> Clientes { get; set; }
+        public DbSet<Paquete> Paquetes { get; set; }
+        public DbSet<Destino> Destinos { get; set; }
+
+        public DbSet<Excursion> Excursiones { get; set; }
+
+        public DbSet<Pais> Paises { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Excursion>()
+                .HasOne(e => e.Destino)
+                .WithMany(d => d.Excursiones)
+                .HasForeignKey(e => e.DestinoId);
+
+            modelBuilder.Entity<Destino>()
+                .HasMany(d => d.Paquetes)
+                .WithOne(p => p.Destino)
+                .HasForeignKey(p => p.IdDestino);
+
+            modelBuilder.Entity<Destino>()
+                .HasOne(d => d.Pais)
+                .WithMany(p => p.Destinos)
+                .HasForeignKey(d => d.IdPais);          
+        }
     }
 }

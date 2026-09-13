@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using infinitoBack.Data;
 
@@ -11,9 +12,11 @@ using infinitoBack.Data;
 namespace infinitoBack.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260824000011_Modificacion-nombre-columna")]
+    partial class Modificacionnombrecolumna
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -148,7 +151,7 @@ namespace infinitoBack.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("IdDestino")
+                    b.Property<int>("IdExcursion")
                         .HasColumnType("int");
 
                     b.Property<string>("Nombre")
@@ -163,7 +166,7 @@ namespace infinitoBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdDestino");
+                    b.HasIndex("IdExcursion");
 
                     b.ToTable("Paquetes");
                 });
@@ -225,19 +228,22 @@ namespace infinitoBack.Migrations
 
             modelBuilder.Entity("infinitoBack.Models.Paquete", b =>
                 {
-                    b.HasOne("infinitoBack.Models.Destino", "Destino")
+                    b.HasOne("infinitoBack.Models.Excursion", "Excursion")
                         .WithMany("Paquetes")
-                        .HasForeignKey("IdDestino")
+                        .HasForeignKey("IdExcursion")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Destino");
+                    b.Navigation("Excursion");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Destino", b =>
                 {
                     b.Navigation("Excursiones");
+                });
 
+            modelBuilder.Entity("infinitoBack.Models.Excursion", b =>
+                {
                     b.Navigation("Paquetes");
                 });
 
