@@ -13,10 +13,15 @@ namespace infinitoBack.Models
         public string Apellido { get; set; }
         [Required]
         public int Ci { get; set; }
+
+        public DateOnly? FechaVencimientoCi { get; set; }
+
         [Required]
         public DateOnly FechaNacimiento { get; set; }
         public string Telefono { get; set; }
 
-        public decimal Saldo { get; set; }
+        public List<Reserva>? Reservas { get; set; }
+
+        public List<Reserva>? ReservasPagas { get; set; }
     }
 }

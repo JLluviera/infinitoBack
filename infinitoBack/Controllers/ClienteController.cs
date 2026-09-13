@@ -51,7 +51,6 @@ namespace infinitoBack.Controllers
                 Telefono = datosCliente.Telefono,
                 Ci = datosCliente.Ci,
                 FechaNacimiento = datosCliente.FechaNacimiento,
-                Saldo = 0
             };
 
             await _context.Clientes.AddAsync(cliente);

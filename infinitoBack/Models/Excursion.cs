@@ -19,5 +19,7 @@ namespace infinitoBack.Models
         public int DestinoId { get; set; }
 
         public Destino Destino { get; set; }
+
+        public List<Reserva>? Reservas { get; set; }
     }
 }
