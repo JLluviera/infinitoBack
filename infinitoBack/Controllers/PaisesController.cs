@@ -84,7 +84,7 @@ namespace infinitoBack.Controllers
                 
             _context.Paises.Add(nuevoPais);
             _context.SaveChanges();
-            return Ok(nuevoPais);
+            return Ok("El pais se creo correctamente");
 
         }
 
@@ -131,7 +131,7 @@ namespace infinitoBack.Controllers
 
             _context.Paises.Remove(pais);
             _context.SaveChanges();
-            return Ok(pais);
+            return Ok("El pais se borro exitosamente");
         }
     }
 }
