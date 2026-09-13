@@ -89,7 +89,26 @@ public async Task<IActionResult> CrearDestino([FromBody] DestinoCrearDto destino
     [HttpGet]
     public async Task<IActionResult> ListarDestinos()
     {
-        List<Destino> destinos = await _context.Destinos.ToListAsync();
+        List<Destino> destinos = await _context.Destinos
+                                                .Include(d => d.Pais)
+                                                .Select(d => new Destino
+                                                {
+                                                    Id = d.Id,
+                                                    Nombre = d.Nombre,
+                                                    Ciudad = d.Ciudad,
+                                                    Descripcion = d.Descripcion,
+                                                    IdPais = d.IdPais,
+                                                    Pais = new Pais
+                                                    {
+                                                        Id = d.Pais.Id,
+                                                        NombrePais = d.Pais.NombrePais,
+                                                        CodigoPais = d.Pais.CodigoPais,
+                                                        Destinos = null
+                                                    },
+                                                    Excursiones = null,
+                                                    Paquetes = null
+                                                })
+                                                .ToListAsync();
         return Ok(destinos);
     }
 
@@ -98,6 +117,7 @@ public async Task<IActionResult> CrearDestino([FromBody] DestinoCrearDto destino
     {
         Destino? destino = await _context.Destinos
                                         .Include(d => d.Excursiones)
+                                        .Include(d => d.Paquetes)
                                         .Include(d => d.Pais)
                                         .Select(d => new Destino
                                         {
@@ -112,7 +132,7 @@ public async Task<IActionResult> CrearDestino([FromBody] DestinoCrearDto destino
                                                 CodigoPais = d.Pais.CodigoPais,
                                                 Destinos = null
                                             },
-                                            Excursiones = d.Excursiones.Select(e => new Excursion
+                                            Excursiones = d.Excursiones!.Select(e => new Excursion
                                             {
                                                 Id = e.Id,
                                                 Nombre = e.Nombre,
@@ -120,8 +140,16 @@ public async Task<IActionResult> CrearDestino([FromBody] DestinoCrearDto destino
                                                 CantDias = e.CantDias,
                                                 CantLugares = e.CantLugares,
                                                 DestinoId = e.DestinoId,
-                                                Paquetes = null
-                                            }).ToList()
+                                            }).ToList() ?? null,
+                                            Paquetes = d.Paquetes!.Select(p => new Paquete
+                                            {
+                                                Id = p.Id,
+                                                Nombre = p.Nombre,
+                                                Precio = p.Precio,
+                                                Seña = p.Seña,
+                                                Descripcion = p.Descripcion,
+                                                IdDestino = p.IdDestino
+                                            }).ToList() ?? null
                                         })
                                         .FirstOrDefaultAsync(d => d.Id == id);
 

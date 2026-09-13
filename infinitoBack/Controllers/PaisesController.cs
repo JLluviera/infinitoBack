@@ -49,8 +49,8 @@ namespace infinitoBack.Controllers
                                         CodigoPais = p.CodigoPais,
                                         Destinos = p.Destinos.Select(d => new DestinoCrearDto
                                                                         { Nombre = d.Nombre,
-                                                                          Ciudad = d.Ciudad
-
+                                                                          Ciudad = d.Ciudad,
+                                                                          Descripcion = d.Descripcion
                                         }).ToList()
                                     })
                                     .FirstOrDefault(p => p.Id == id);
