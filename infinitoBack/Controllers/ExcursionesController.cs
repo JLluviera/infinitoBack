@@ -42,6 +42,7 @@ namespace infinitoBack.Controllers
                                                     CantLugares = e.CantLugares,
                                                     CantDias = e.CantDias,
                                                     FechaSalida = e.FechaSalida,
+                                                    DestinoId = e.DestinoId,
                                                     Destino = new DestinoResponseDTO
                                                     {
                                                         Id = e.Destino.Id,
