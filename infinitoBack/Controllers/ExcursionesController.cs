@@ -23,23 +23,6 @@ namespace infinitoBack.Controllers
             _tokenService = tokenService;
         }
 
-
-        // GET: api/<ExcursionesController>
-        //[HttpGet]
-        //public List<ExcursionResponseDTO> Get()
-        //{
-        //    List<ExcursionResponseDTO> excursionesResponse = _context.Excursiones.Select(e => new ExcursionResponseDTO
-        //    {
-        //        Nombre = e.Nombre,
-        //        CantLugares = e.CantLugares,
-        //        CantDias = e.CantDias,
-        //        FechaSalida = e.FechaSalida,
-        //        DestinoId = e.DestinoId
-        //    }).ToList();
-
-        //    return excursionesResponse;
-        //}
-
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -52,8 +35,6 @@ namespace infinitoBack.Controllers
         public ExcursionesResponseDTO Get(int id)
         {
             ExcursionesResponseDTO? excursion = _context.Excursiones
-                                                .Include(e => e.Destino)
-                                                .Include(e => e.Paquetes)
                                                 .Select(e => new ExcursionesResponseDTO
                                                 {
                                                     Id = e.Id,
@@ -61,17 +42,31 @@ namespace infinitoBack.Controllers
                                                     CantLugares = e.CantLugares,
                                                     CantDias = e.CantDias,
                                                     FechaSalida = e.FechaSalida,
-                                                    Destino = e.Destino == null ? null : new DestinoCrearDto
+                                                    Destino = new DestinoResponseDTO
                                                     {
+                                                        Id = e.Destino.Id,
                                                         Nombre = e.Destino.Nombre,
                                                         Ciudad = e.Destino.Ciudad,
                                                         Descripcion = e.Destino.Descripcion,
+                                                        IdPais = e.Destino.IdPais,
+                                                        Pais = new Pais
+                                                        {
+                                                            Id = e.Destino.Pais.Id,
+                                                            NombrePais = e.Destino.Pais.NombrePais,
+                                                            CodigoPais = e.Destino.Pais.CodigoPais
+                                                        },
+                                                        Paquetes = e.Destino.Paquetes!.Select(p => new PaqueteResponseDTO
+                                                        {
+                                                            Id = p.Id,
+                                                            Nombre = p.Nombre,
+                                                            Precio = p.Precio,
+                                                            Seña = p.Seña,
+                                                            Descripcion = p.Descripcion,
+                                                            IdDestino = p.IdDestino,
+                                                            Destino = null
+                                                        }).ToList() ?? null,
+                                                        Excursiones = null
                                                     },
-                                                    Paquetes = e.Paquetes!.Select(p => new PaqueteResponseDTO
-                                                    {
-                                                        Nombre = p.Nombre,
-                                                        Precio = p.Precio
-                                                    }).ToList() ?? null
                                                 })
                                                 .FirstOrDefault(e => e.Id == id);
 

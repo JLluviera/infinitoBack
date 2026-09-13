@@ -27,11 +27,11 @@ public class PaqueteController : ControllerBase
         {
             return Conflict($"Ya existe un paquete con el nombre {paqueteCrearDto.Nombre}");
         }
-        bool excursionExiste = await _context.Excursiones.AnyAsync(e=> e.Id == paqueteCrearDto.IdExcursion);
+        bool destinoExiste = await _context.Destinos.AnyAsync(d => d.Id == paqueteCrearDto.IdDestino);
 
-        if (!excursionExiste)
+        if (!destinoExiste)
         {
-            return BadRequest("La excursión seleccionada no existe.");
+            return BadRequest("El destino seleccionado no existe.");
         }
 
         Paquete paquete = new Paquete()
@@ -40,7 +40,7 @@ public class PaqueteController : ControllerBase
             Precio = paqueteCrearDto.Precio,
             Seña = paqueteCrearDto.Seña,
             Descripcion = paqueteCrearDto.Descripcion,
-            IdExcursion = paqueteCrearDto.IdExcursion
+            IdDestino = paqueteCrearDto.IdDestino
         };
 
         await _context.Paquetes.AddAsync(paquete);
@@ -56,11 +56,11 @@ public class PaqueteController : ControllerBase
         {
             return NotFound($"No se encontro ningun paquete con el id {id}");
         }
-        bool excursionExiste = await _context.Excursiones.AnyAsync(e => e.Id == paqueteModificado.IdExcursion);
+        bool destinoExiste = await _context.Destinos.AnyAsync(d => d.Id == paqueteModificado.IdDestino);
 
-        if (!excursionExiste)
+        if (!destinoExiste)
         {
-            return BadRequest("La excursión seleccionada no existe.");
+            return BadRequest("El destino seleccionado no existe.");
         }
 
         paquete.Seña = paqueteModificado.Seña;

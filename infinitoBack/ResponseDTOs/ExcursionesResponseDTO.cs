@@ -16,8 +16,7 @@ namespace infinitoBack.ResponseDTOs
 
         public DateOnly FechaSalida { get; set; }
 
-        public DestinoCrearDto? Destino { get; set; }
-
-        public List<PaqueteResponseDTO>? Paquetes { get; set; }
+        public DestinoResponseDTO? Destino { get; set; }
+        public int DestinoId { get; set; }
     }
 }
