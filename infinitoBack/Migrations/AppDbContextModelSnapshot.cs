@@ -34,7 +34,7 @@ namespace infinitoBack.Migrations
 
                     b.HasIndex("ReservaId");
 
-                    b.ToTable("ReservaCliente");
+                    b.ToTable("ReservaCliente", (string)null);
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Cliente", b =>
@@ -68,7 +68,7 @@ namespace infinitoBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clientes");
+                    b.ToTable("Clientes", (string)null);
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Destino", b =>
@@ -98,7 +98,7 @@ namespace infinitoBack.Migrations
 
                     b.HasIndex("IdPais");
 
-                    b.ToTable("Destinos");
+                    b.ToTable("Destinos", (string)null);
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Excursion", b =>
@@ -129,7 +129,7 @@ namespace infinitoBack.Migrations
 
                     b.HasIndex("DestinoId");
 
-                    b.ToTable("Excursiones");
+                    b.ToTable("Excursiones", (string)null);
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Pais", b =>
@@ -148,7 +148,7 @@ namespace infinitoBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Paises");
+                    b.ToTable("Paises", (string)null);
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Paquete", b =>
@@ -180,7 +180,7 @@ namespace infinitoBack.Migrations
 
                     b.HasIndex("IdDestino");
 
-                    b.ToTable("Paquetes");
+                    b.ToTable("Paquetes", (string)null);
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Reserva", b =>
@@ -217,7 +217,7 @@ namespace infinitoBack.Migrations
 
                     b.HasIndex("IdPaquete");
 
-                    b.ToTable("Reservas");
+                    b.ToTable("Reservas", (string)null);
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Usuario", b =>
@@ -250,7 +250,7 @@ namespace infinitoBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Usuarios");
+                    b.ToTable("Usuarios", (string)null);
                 });
 
             modelBuilder.Entity("ReservaCliente", b =>

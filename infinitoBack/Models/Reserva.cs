@@ -27,7 +27,7 @@ namespace infinitoBack.Models
         
         public Paquete Paquete { get; set; }
 
-        public List<Cliente>? ClientesIncluidos { get; set; }
+        public List<Cliente>? ClientesIncluidos { get; set; } = new List<Cliente>();
     }
 }
 

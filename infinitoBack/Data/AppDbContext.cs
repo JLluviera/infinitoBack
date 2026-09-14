@@ -35,7 +35,7 @@ namespace infinitoBack.Data
                 .HasOne(d => d.Pais)
                 .WithMany(p => p.Destinos)
                 .HasForeignKey(d => d.IdPais);   
-            
+
             modelBuilder.Entity<Reserva>()
                 .HasOne(r => r.ClientePagador)
                 .WithMany(c => c.ReservasPagas)

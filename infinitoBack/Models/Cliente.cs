@@ -20,8 +20,8 @@ namespace infinitoBack.Models
         public DateOnly FechaNacimiento { get; set; }
         public string Telefono { get; set; }
 
-        public List<Reserva>? Reservas { get; set; }
+        public List<Reserva>? Reservas { get; set; } = new List<Reserva>();
 
-        public List<Reserva>? ReservasPagas { get; set; }
+        public List<Reserva>? ReservasPagas { get; set; } = new List<Reserva>();
     }
 }
