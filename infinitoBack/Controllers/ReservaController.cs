@@ -191,5 +191,51 @@ namespace infinitoBack.Controllers
             await _context.SaveChangesAsync();
             return Ok("Reserva eliminada correctamente");
         }
+
+        // Get api/<ReservaController>/cliente/5 Reservas de un cliente
+        [HttpGet("cliente/{ciCliente}")]
+        public async Task<IActionResult> ReservasCliente (int ciCliente)
+        {
+            if (ciCliente == 0) return BadRequest("La cédula del cliente no puede ser 0");
+
+            List<Reserva> reservas = await _context.Reservas
+                                                    .Include(r => r.ClientePagador)
+                                                    .Include(r => r.Paquete)
+                                                    .Include(r => r.Excursion)
+                                                    .Where(r => r.ClientePagador.Ci == ciCliente)
+                                                    .ToListAsync();
+            if (reservas.Count == 0)
+            {
+                return NotFound($"No se encontraron reservas para el cliente con cédula {ciCliente}");
+            }
+
+            List<ReservaResponseDTO> reservasResponse = reservas.Select(r => new ReservaResponseDTO
+            {
+                Id = r.Id,
+                IdClientePagador = r.IdClientePagador,
+                IdExcursion = r.IdExcursion,
+                IdPaquete = r.IdPaquete,
+                MontoTotal = r.MontoTotal,
+                EstadoReserva = r.EstadoReserva,
+                FechaReserva = r.FechaReserva,
+                ClientePagador = new ClienteResponseDTO
+                {
+                    Id = r.ClientePagador.Id
+                },
+                Paquete = new PaqueteResponseDTO
+                {
+                    Id = r.Paquete.Id,
+                    Nombre = r.Paquete.Nombre,
+                    Precio = r.Paquete.Precio
+                },
+                Excursion = new ExcursionesResponseDTO
+                {
+                    Id = r.Excursion.Id,
+                    Nombre = r.Excursion.Nombre
+                }
+            }).ToList();
+
+            return Ok(reservasResponse);
+        }
     }
 }
