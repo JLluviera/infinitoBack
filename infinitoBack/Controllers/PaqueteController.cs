@@ -106,4 +106,30 @@ public class PaqueteController : ControllerBase
         return Ok(paquete);
     }
 
+    [HttpGet("excursion/{idExcursion}")]
+    public async Task<IActionResult> ObtenerPaquetesDeExcursion(int idExcursion)
+    {
+        int idDestino = await _context.Excursiones
+                .Where(e => e.Id == idExcursion)
+                .Select(e => e.DestinoId)
+                .FirstOrDefaultAsync();
+
+        if (idDestino == 0)
+        {
+            return NotFound("No se encontró la excursión");
+        }
+
+        List<Paquete>? paquetes = await _context.Paquetes
+                .Where(p => p.IdDestino == idDestino)
+                .ToListAsync();
+
+        if (!paquetes.Any())
+        {
+            return NotFound("No se encontraron paquetes");
+        }
+
+        return Ok(paquetes);
+    }
+
+
 }
