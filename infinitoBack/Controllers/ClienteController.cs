@@ -95,5 +95,18 @@ namespace infinitoBack.Controllers
             await _context.SaveChangesAsync();
             return Ok($"Se modifico el cliente con el id {id}");
         }
+
+        [HttpGet("ci/{ci}")]
+        public async Task<IActionResult> GetClientePorCi(int ci)
+        {
+            Cliente? cliente = await _context.Clientes.Where(c => c.Ci == ci).FirstOrDefaultAsync();
+
+            if (cliente == null)
+            {
+                return NotFound("No se encontro Cliente con esa cédula");
+            }
+
+            return Ok(cliente);
+        }
     }
 }
