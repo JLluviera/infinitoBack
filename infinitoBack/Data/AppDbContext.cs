@@ -18,6 +18,7 @@ namespace infinitoBack.Data
         public DbSet<Pais> Paises { get; set; }
 
         public DbSet<Reserva> Reservas { get; set; }
+        public DbSet<Transaccion> Transacciones { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

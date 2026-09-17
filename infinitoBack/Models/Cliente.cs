@@ -23,5 +23,8 @@ namespace infinitoBack.Models
         public List<Reserva>? Reservas { get; set; } = new List<Reserva>();
 
         public List<Reserva>? ReservasPagas { get; set; } = new List<Reserva>();
+        public List<Transaccion> Transacciones { get; set; }= new List<Transaccion>();
+
+
     }
 }
