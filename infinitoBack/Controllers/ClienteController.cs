@@ -97,14 +97,13 @@ namespace infinitoBack.Controllers
         }
 
         [HttpGet("ci/{ci}")]
-        public async Task<IActionResult> ClientePorCI(int ci)
+        public async Task<IActionResult> GetClientePorCi(int ci)
         {
-            Cliente? cliente = await _context.Clientes
-                .FirstOrDefaultAsync(c => c.Ci == ci);
+            Cliente? cliente = await _context.Clientes.Where(c => c.Ci == ci).FirstOrDefaultAsync();
 
             if (cliente == null)
             {
-                return NotFound($"No se encuentra el cliente con CI {ci}");
+                return NotFound("No se encontro Cliente con esa cédula");
             }
 
             return Ok(cliente);
