@@ -62,6 +62,17 @@ namespace infinitoBack.Data
                 .HasForeignKey(r => r.IdPaquete)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Transaccion>()
+                .HasOne(t => t.Cliente)
+                .WithMany(c => c.Transacciones)
+                .HasForeignKey(t => t.IdCliente)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Transaccion>()
+                .HasOne(t => t.Reserva)
+                .WithMany(r => r.Transacciones)
+                .HasForeignKey(t => t.IdReserva)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

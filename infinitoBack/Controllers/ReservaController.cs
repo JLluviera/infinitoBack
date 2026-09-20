@@ -61,6 +61,8 @@ namespace infinitoBack.Controllers
             }));
         }
 
+
+
         // GET api/<ReservaController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Ver(int id)
@@ -236,6 +238,48 @@ namespace infinitoBack.Controllers
             }).ToList();
 
             return Ok(reservasResponse);
+        }
+
+        [HttpGet("excursion/{idExcursion}")]
+        public async Task<IActionResult> getReservasDeExcursion(int? idExcursion)
+        {
+            if (idExcursion == 0) return BadRequest("El idExcursion no puede ser 0");
+
+            List<ReservaListResponseDTO> reservas = await _context.Reservas
+                                                            .Where(r => r.IdExcursion == idExcursion)
+                                                            .Select(r => new ReservaListResponseDTO
+                                                            {
+                                                                Id = r.Id,
+                                                                EstadoReserva = r.EstadoReserva,
+                                                                NombreCliente = r.ClientePagador.Nombre,
+                                                                ApellidoCliente = r.ClientePagador.Apellido,
+                                                                CiCliente = r.ClientePagador.Ci
+                                                            })
+                                                            .ToListAsync();
+            if (reservas.Count == 0)
+            { return NotFound("No se encontraron reservas para esa excursion"); }
+
+            return Ok(reservas);
+        }
+
+        [HttpGet("list")]
+        public async Task<IActionResult> getReservasList()
+        {
+            List<ReservaListResponseDTO> reservas = await _context.Reservas
+                                                            .Select(r => new ReservaListResponseDTO
+                                                            {
+                                                                Id = r.Id,
+                                                                IdExcursion = r.IdExcursion,
+                                                                EstadoReserva = r.EstadoReserva,
+                                                                NombreCliente = r.ClientePagador.Nombre,
+                                                                ApellidoCliente = r.ClientePagador.Apellido,
+                                                                CiCliente = r.ClientePagador.Ci
+                                                            })
+                                                            .ToListAsync();
+            if (reservas.Count == 0)
+            { return NotFound("No se encontraron reservas para esa excursion"); }
+
+            return Ok(reservas);
         }
     }
 }

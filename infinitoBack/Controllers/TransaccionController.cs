@@ -45,7 +45,7 @@ namespace infinitoBack.Controllers
             {
                 Monto = transaccionDatos.Monto,
                 FechaCreacion = transaccionDatos.FechaCreacion,
-                FormaDePAgo = transaccionDatos.FormaDePago,
+                FormaDePago = transaccionDatos.FormaDePago,
                 Observaciones = transaccionDatos.Observaciones,
                 Estado = transaccionDatos.Estado,
                 IdReserva = transaccionDatos.IdReserva,
@@ -68,7 +68,7 @@ namespace infinitoBack.Controllers
             }
             transaccion.Monto = transaccionEditada.Monto;
             transaccion.FechaCreacion = transaccionEditada.FechaCreacion;
-            transaccion.FormaDePAgo = transaccionEditada.FormaDePago;
+            transaccion.FormaDePago = transaccionEditada.FormaDePago;
             transaccion.Observaciones = transaccionEditada.Observaciones;
             transaccion.Estado = transaccionEditada.Estado;
             transaccion.IdReserva = transaccionEditada.IdReserva;
