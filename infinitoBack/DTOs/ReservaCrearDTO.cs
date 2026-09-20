@@ -2,7 +2,7 @@
 {
     public class ReservaCrearDTO
     {
-        public int IdClientePagador { get; set; }
+        public int CiClientePagador { get; set; }
 
         public int IdExcursion { get; set; }
 

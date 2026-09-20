@@ -130,7 +130,7 @@ namespace infinitoBack.Controllers
                 return BadRequest("Datos de reserva inválidos");
             }
 
-            if (reservaNueva.IdClientePagador == 0 || reservaNueva.IdExcursion == 0 || reservaNueva.IdPaquete == 0)
+            if (reservaNueva.CiClientePagador == 0 || reservaNueva.IdExcursion == 0 || reservaNueva.IdPaquete == 0)
             {
                 return BadRequest("Los campos IdClientePagador, IdExcursion e IdPaquete son obligatorios y no pueden ser 0");
             }
@@ -142,11 +142,11 @@ namespace infinitoBack.Controllers
                 return NotFound($"No se encontró ninguna excursión con el id {reservaNueva.IdExcursion}");
             }
 
-            Cliente? clientePagador = await _context.Clientes.FindAsync(reservaNueva.IdClientePagador);
+            Cliente? clientePagador = await _context.Clientes.Where(c => c.Ci == reservaNueva.CiClientePagador).FirstOrDefaultAsync();
 
             if (clientePagador == null)
             {
-                return NotFound($"No se encontró ningún cliente con el id {reservaNueva.IdClientePagador}");
+                return NotFound($"No se encontró ningún cliente con el id {reservaNueva.CiClientePagador}");
             }
 
             Paquete? paquete = await _context.Paquetes.FindAsync(reservaNueva.IdPaquete);
@@ -158,7 +158,7 @@ namespace infinitoBack.Controllers
 
             Reserva reserva = new Reserva
             {
-                IdClientePagador = reservaNueva.IdClientePagador,
+                IdClientePagador = clientePagador.Id,
                 IdExcursion = reservaNueva.IdExcursion,
                 IdPaquete = reservaNueva.IdPaquete,
                 ClientePagador = clientePagador,
