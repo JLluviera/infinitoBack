@@ -207,6 +207,7 @@ namespace infinitoBack.Controllers
                                                     .Include(r => r.Paquete)
                                                     .Include(r => r.Excursion)
                                                     .Where(r => r.ClientePagador.Ci == ciCliente)
+                                                    .OrderBy(r => r.EstadoReserva)
                                                     .ToListAsync();
             if (reservas.Count == 0)
             {

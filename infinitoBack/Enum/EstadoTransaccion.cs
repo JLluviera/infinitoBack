@@ -2,7 +2,9 @@
 {
     public enum EstadoTransaccion
     {
-        Pendiente ,
-        Finalizado
+        Pago ,
+        CreditoPorAnulacion,
+        UsoDeSaldo,
+        DevolucionPago
     }
 }
