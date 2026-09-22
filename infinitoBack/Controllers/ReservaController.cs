@@ -291,6 +291,7 @@ namespace infinitoBack.Controllers
 
             Reserva? reserva = await _context.Reservas
                                                 .Include(r => r.ClientesIncluidos)
+                                                .Include(r=> r.Paquete)
                                                 .Where(r => r.Id == idRes)
                                                 .FirstOrDefaultAsync();
             
@@ -308,6 +309,7 @@ namespace infinitoBack.Controllers
             try
             {
                 reserva.ClientesIncluidos.Add(cliente);
+                reserva.MontoTotal = reserva.MontoTotal + reserva.Paquete.Precio;
                 await _context.SaveChangesAsync();
                 return Ok("Cliente agregado");
 
