@@ -2,8 +2,10 @@
 using infinitoBack.DTOs;
 using infinitoBack.Models;
 using infinitoBack.ResponseDTOs;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using System.Data;
 
 
@@ -280,6 +282,45 @@ namespace infinitoBack.Controllers
             { return NotFound("No se encontraron reservas para esa excursion"); }
 
             return Ok(reservas);
+        }
+
+        [HttpPut("agregar/{idRes}/{ciCliente}")]
+        public async Task<IActionResult> agregarClienteAReserva(int idRes, int ciCliente)
+        {
+            if (idRes == 0 || ciCliente == 0) return BadRequest("Los ids no pueden ser igual a 0");
+
+            Reserva? reserva = await _context.Reservas
+                                                .Include(r => r.ClientesIncluidos)
+                                                .Where(r => r.Id == idRes)
+                                                .FirstOrDefaultAsync();
+            
+            if (reserva == null) return NotFound("No se encontro reserva con ese ID");
+            
+
+            Cliente? cliente = await _context.Clientes
+                                                .Where(c => c.Ci == ciCliente)
+                                                .FirstOrDefaultAsync();
+
+            if (cliente == null) return NotFound("No se encontro cliente con esa CI");
+
+            if (reserva.ClientesIncluidos!.Find(c => c.Id == cliente.Id) != null) return BadRequest("El cliente ya esta agregado a la reserva");
+
+            try
+            {
+                reserva.ClientesIncluidos.Add(cliente);
+                await _context.SaveChangesAsync();
+                return Ok("Cliente agregado");
+
+            } catch (DbUpdateException ex)
+            {
+                return Problem(detail:"No se pudo agregar al cliente",
+                                title:"Error de Persistencia",
+                                statusCode: StatusCodes.Status500InternalServerError);
+            } 
+            
+
+            
+
         }
     }
 }
