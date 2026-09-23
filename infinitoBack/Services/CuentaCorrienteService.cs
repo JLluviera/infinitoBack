@@ -1,19 +1,35 @@
 ﻿using infinitoBack.Data;
+using infinitoBack.Models;
+using infinitoBack.Utils;
 
 namespace infinitoBack.Services
 {
     public class CuentaCorrienteService
     {
         private readonly AppDbContext _context;
+        private readonly TransaccionesService _transaccionesService;
 
-        public CuentaCorrienteService(AppDbContext context)
+        public CuentaCorrienteService(AppDbContext context, TransaccionesService transaccionesService)
         {
             _context = context;
+            _transaccionesService = transaccionesService;
         }
 
-        public bool AnulacionReserva(int idReserva) //Acredita las transacciones sobre la reserva que se esta anulando. Pasa el estado
+        public async Task<Resultado> AcreditarPagos(Reserva reserva) //Acredita las transacciones sobre la reserva que se esta anulando. Pasa el estado
         {
-            return true;
+            decimal totalTransacciones = 0;
+
+            foreach (Transaccion transaccion in reserva.Transacciones)
+            {
+                totalTransacciones += transaccion.Monto;
+            }
+
+            Resultado res = await _transaccionesService.CrearSaldoCliente(reserva.Id, reserva.IdClientePagador, totalTransacciones);
+
+            if (!res.Exitoso) return res;
+
+
+            return Resultado.Correcto();
         }
 
         public decimal ConsultaSaldoDisponibleCliente(int idCliente)

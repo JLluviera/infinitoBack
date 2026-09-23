@@ -20,6 +20,6 @@ namespace infinitoBack.Models
 
         public Destino Destino { get; set; }
 
-        public List<Reserva>? Reservas { get; set; }
+        public List<Reserva>? Reservas { get; set; } = new List<Reserva>();
     }
 }

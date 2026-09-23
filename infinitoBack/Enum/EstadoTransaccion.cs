@@ -1,8 +1,11 @@
-﻿namespace infinitoBack.Enum
+﻿using System.Text.Json.Serialization;
+
+namespace infinitoBack.Enum
 {
     public enum EstadoTransaccion
     {
-        Pago ,
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        Pago,
         CreditoPorAnulacion,
         UsoDeSaldo,
         DevolucionPago

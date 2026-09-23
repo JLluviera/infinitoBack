@@ -39,7 +39,7 @@ namespace infinitoBack.Controllers
         }
         [HttpPost]
 
-        public async Task<IActionResult> CrearTransaccion([FromBody] TransaccionCrearDto transaccionDatos)
+        public async Task<IActionResult> CrearTransaccionPago([FromBody] TransaccionCrearDto transaccionDatos)
         {
             Transaccion transaccion = new Transaccion()
             {
@@ -47,7 +47,7 @@ namespace infinitoBack.Controllers
                 FechaCreacion = transaccionDatos.FechaCreacion,
                 FormaDePago = transaccionDatos.FormaDePago,
                 Observaciones = transaccionDatos.Observaciones,
-                Estado = transaccionDatos.Estado,
+                Estado = EstadoTransaccion.Pago,
                 IdReserva = transaccionDatos.IdReserva,
                 IdCliente = transaccionDatos.IdCliente,
             };
@@ -67,10 +67,8 @@ namespace infinitoBack.Controllers
                 return NotFound($"No se encontro ninguna transaccion con el id {id}");
             }
             transaccion.Monto = transaccionEditada.Monto;
-            transaccion.FechaCreacion = transaccionEditada.FechaCreacion;
             transaccion.FormaDePago = transaccionEditada.FormaDePago;
             transaccion.Observaciones = transaccionEditada.Observaciones;
-            transaccion.Estado = transaccionEditada.Estado;
             transaccion.IdReserva = transaccionEditada.IdReserva;
             transaccion.IdCliente = transaccionEditada.IdCliente;
 

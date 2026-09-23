@@ -1,7 +1,10 @@
 ﻿using infinitoBack.Data;
 using infinitoBack.DTOs;
+using infinitoBack.Enum;
 using infinitoBack.Models;
 using infinitoBack.ResponseDTOs;
+using infinitoBack.Services;
+using infinitoBack.Utils;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +19,12 @@ namespace infinitoBack.Controllers
     public class ReservaController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ReservasService _reservaService;
 
-        public ReservaController(AppDbContext context)
+        public ReservaController(AppDbContext context, ReservasService reservasService)
         {
             _context = context;
+            _reservaService = reservasService;
         }
 
         // GET: api/<ReservaController>
@@ -319,11 +324,36 @@ namespace infinitoBack.Controllers
                 return Problem(detail:"No se pudo agregar al cliente",
                                 title:"Error de Persistencia",
                                 statusCode: StatusCodes.Status500InternalServerError);
-            } 
-            
+            }
+        }
 
-            
+        [HttpPut("anular/{idReserva}")]
+        public async Task<IActionResult> AnularReserva (int idReserva)
+        {
+            if (idReserva <= 0)
+            {
+                return BadRequest("El IdReserva es incorrecto");
+            }
 
+            Resultado result = await _reservaService.AnularReserva(idReserva);
+
+            if (result.Exitoso)
+            {
+                return Ok("La reserva fue anulada correctamente");
+            } else
+            {
+                switch (result.TipoErr)
+                {
+                    case TipoError.NoEncontrado: return NotFound("No se encontro la reserva");
+                        break;
+                    case TipoError.ReglaDeNegocio: return BadRequest("Id invalido");
+                        break;
+                    default: return Problem(detail:"No se pudo anular la reserva",
+                                                                    title: "Error de Persistencia",
+                                                                    statusCode: StatusCodes.Status500InternalServerError);
+                        break;
+                }
+            }
         }
     }
 }
