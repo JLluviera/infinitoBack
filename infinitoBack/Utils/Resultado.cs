@@ -10,6 +10,7 @@ namespace infinitoBack.Utils
 
         public TipoError TipoErr { get; }
 
+
         protected Resultado(bool exitoso, string mensajeError, TipoError tipoErr)
         {
             Exitoso = exitoso;

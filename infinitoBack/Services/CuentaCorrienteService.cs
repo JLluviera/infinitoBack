@@ -1,6 +1,8 @@
 ﻿using infinitoBack.Data;
 using infinitoBack.Models;
 using infinitoBack.Utils;
+using infinitoBack.Enum;
+using Microsoft.EntityFrameworkCore;
 
 namespace infinitoBack.Services
 {
@@ -9,10 +11,13 @@ namespace infinitoBack.Services
         private readonly AppDbContext _context;
         private readonly TransaccionesService _transaccionesService;
 
-        public CuentaCorrienteService(AppDbContext context, TransaccionesService transaccionesService)
+        private readonly ReservasService _reservasService;
+
+        public CuentaCorrienteService(AppDbContext context, TransaccionesService transaccionesService, ReservasService reservasService)
         {
             _context = context;
             _transaccionesService = transaccionesService;
+            _reservasService = reservasService;
         }
 
         public async Task<Resultado> AcreditarPagos(Reserva reserva) //Acredita las transacciones sobre la reserva que se esta anulando. Pasa el estado
@@ -32,20 +37,44 @@ namespace infinitoBack.Services
             return Resultado.Correcto();
         }
 
-        public decimal ConsultaSaldoDisponibleCliente(int idCliente)
+        public async Task<decimal> ConsultaSaldoDisponibleCliente(Cliente cliente)
         {
             decimal saldo = 0;
+
+            foreach (Transaccion transaccion in cliente.Transacciones)
+            {
+                if(transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion || transaccion.Estado == EstadoTransaccion.UsoDeSaldo)
+                {
+                    saldo += transaccion.Monto;
+                }
+            }
+
             return saldo;
         }
 
-        public bool AgregarRestante(decimal restante) //Seria para cuendo queremos pagar una reserva con saldo pero el cliente tiene mas saldo del requerido. En la controladora acreditamos todas las transacciones y luego creamos una nueva transaccion con el restante
+        public async Task<Resultado> CancelarReserva(Reserva reserva) // En este caso se crea transaccion que cancele las anteriores(si las hay) con el estado DevolucionPago
         {
-            return true;
-        }
+            decimal totalPago = await _reservasService.ConsultarTotalPagoAReserva(reserva);
 
-        public bool CancelarReserva(int idReserva) // En este caso se crea transaccion que cancele las anteriores(si las hay) con el estado DevolucionPago
-        {
-            return true;
+            Transaccion transaccionCancelacion = new Transaccion();
+
+            transaccionCancelacion.IdCliente = reserva.IdClientePagador;
+            transaccionCancelacion.IdReserva = reserva.Id;
+            transaccionCancelacion.Estado = EstadoTransaccion.CreditoPorAnulacion;
+            transaccionCancelacion.FormaDePago = FormaDePago.Transferencia;
+            transaccionCancelacion.Observaciones = $"Cancelacion de reserva {reserva.Id}";
+            transaccionCancelacion.Monto = (totalPago * -1);
+            
+            try
+            {
+                await _context.Transacciones.AddAsync(transaccionCancelacion);
+                await _context.SaveChangesAsync();
+            } catch (Exception ex)
+            {
+                return Resultado.Error("No se pudo agregar la transaccion de cancelacion", TipoError.ErrorInesperado);
+            }
+
+            return Resultado.Correcto();
         }
     }
 }

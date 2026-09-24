@@ -6,7 +6,7 @@ namespace infinitoBack.Models
     {
         public int Id { get; set; } 
         public decimal Monto { get; set; }
-        public DateOnly FechaCreacion { get; set; }
+        public DateOnly FechaCreacion { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         public FormaDePago FormaDePago { get; set; }
         public string Observaciones { get; set; }
         public EstadoTransaccion Estado {  get; set; }

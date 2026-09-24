@@ -332,7 +332,7 @@ namespace infinitoBack.Controllers
         {
             if (idReserva <= 0)
             {
-                return BadRequest("El IdReserva es incorrecto");
+                return BadRequest("El Id de Reserva es incorrecto");
             }
 
             Resultado result = await _reservaService.AnularReserva(idReserva);
@@ -344,13 +344,48 @@ namespace infinitoBack.Controllers
             {
                 switch (result.TipoErr)
                 {
-                    case TipoError.NoEncontrado: return NotFound("No se encontro la reserva");
+                    case TipoError.NoEncontrado: 
+                        return NotFound("No se encontro la reserva");
                         break;
-                    case TipoError.ReglaDeNegocio: return BadRequest("Id invalido");
+                    case TipoError.ReglaDeNegocio: 
+                        return BadRequest("Id invalido");
                         break;
-                    default: return Problem(detail:"No se pudo anular la reserva",
-                                                                    title: "Error de Persistencia",
-                                                                    statusCode: StatusCodes.Status500InternalServerError);
+                    default: 
+                        return Problem(detail:"No se pudo anular la reserva",
+                                        title: "Error de Persistencia",
+                                        statusCode: StatusCodes.Status500InternalServerError);
+                        break;
+                }
+            }
+        }
+
+        [HttpPut("cancelar/{idReserva}")]
+        public async Task<IActionResult> CancelarReserva(int idReserva)
+        {
+            if (idReserva <= 0)
+            {
+                return BadRequest("Id de Reserva inválido");
+            }
+
+            Resultado result = await _reservaService.CancelarReserva(idReserva);
+
+            if (result.Exitoso)
+            {
+                return Ok("Reserva cancelada correctamente");
+            } else
+            {
+                switch (result.TipoErr)
+                {
+                    case TipoError.NoEncontrado:
+                        return NotFound(result.MensajeError);
+                        break;
+                    case TipoError.ReglaDeNegocio:
+                        return BadRequest(result.MensajeError);
+                        break;
+                    default:
+                        return Problem(detail: result.MensajeError,
+                                        title: "Error de Persistencia",
+                                        statusCode: StatusCodes.Status500InternalServerError);
                         break;
                 }
             }

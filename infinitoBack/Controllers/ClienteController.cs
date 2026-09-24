@@ -3,6 +3,8 @@ using infinitoBack.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using infinitoBack.DTOs;
+using infinitoBack.Utils;
+using infinitoBack.Services;
 
 namespace infinitoBack.Controllers
 {
@@ -12,9 +14,12 @@ namespace infinitoBack.Controllers
     {
         private readonly AppDbContext _context;
 
-        public ClienteController(AppDbContext context)
+        private readonly CuentaCorrienteService _cuentaCorrienteService;
+
+        public ClienteController(AppDbContext context, CuentaCorrienteService cuentaCorrienteService)
         {
             _context = context;
+            _cuentaCorrienteService = cuentaCorrienteService;
         }
 
         [HttpGet]
@@ -107,6 +112,22 @@ namespace infinitoBack.Controllers
             }
 
             return Ok(cliente);
+        }
+
+        [HttpGet("saldo/{idCliente}")]
+        public async Task<IActionResult> GetSaldoDisponibleCliente(int idCliente)
+        {
+            if (idCliente <= 0) return BadRequest("Id de cliente inválido");
+
+            Cliente? cliente = await _context.Clientes.Where(c => c.Id == idCliente)
+                                                        .Include(c => c.Transacciones)
+                                                        .FirstOrDefaultAsync();
+
+            if (cliente == null) return NotFound("No se encontró cliente con esa Id");
+
+            decimal saldo = await _cuentaCorrienteService.ConsultaSaldoDisponibleCliente(cliente);
+
+            return Ok(saldo);
         }
     }
 }
