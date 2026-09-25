@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using infinitoBack.Enum;
 using infinitoBack.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace infinitoBack.Services
 {
@@ -33,17 +34,26 @@ namespace infinitoBack.Services
 
             reserva.EstadoReserva = EstadoRes.Anulada;
 
-            Resultado result = await _cuentaCorriente.AcreditarPagos(reserva);
+            if (reserva.Transacciones.Count > 0)
+            {
+                Resultado res = await _cuentaCorriente.AcreditarPagos(reserva);
 
-            if (result.Exitoso)
+                if (!res.Exitoso)
+                {
+                    return Resultado.Error("No se pudo anular la reserva", TipoError.ErrorInesperado);
+                }
+            }
+
+            try
             {
                 await _context.SaveChangesAsync();
-                return Resultado.Correcto();
-            } else
+            }
+            catch (Exception ex)
             {
-                return Resultado.Error("No se pudo anular la reserva", TipoError.ErrorInesperado);
-            };
-                
+                return Resultado.Error("No se pudo guardar los cambios", TipoError.ErrorInesperado);
+            }
+
+            return Resultado.Correcto();
         }
 
         public async Task<Resultado> CancelarReserva(int idReserva)
