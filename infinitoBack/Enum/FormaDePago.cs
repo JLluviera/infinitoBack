@@ -6,5 +6,6 @@
         TarjetaDebito,
         TarjetaCredito,
         Transferencia,
+        Saldo 
     }
 }

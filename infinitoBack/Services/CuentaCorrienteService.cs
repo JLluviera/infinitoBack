@@ -11,16 +11,15 @@ namespace infinitoBack.Services
         private readonly AppDbContext _context;
         private readonly TransaccionesService _transaccionesService;
 
-        private readonly ReservasService _reservasService;
-
-        public CuentaCorrienteService(AppDbContext context, TransaccionesService transaccionesService, ReservasService reservasService)
+        public CuentaCorrienteService(
+            AppDbContext context,
+            TransaccionesService transaccionesService)
         {
             _context = context;
             _transaccionesService = transaccionesService;
-            _reservasService = reservasService;
         }
 
-        public async Task<Resultado> AcreditarPagos(Reserva reserva) //Acredita las transacciones sobre la reserva que se esta anulando. Pasa el estado
+        public async Task<Resultado> AcreditarPagos(Reserva reserva)
         {
             decimal totalTransacciones = 0;
 
@@ -29,10 +28,14 @@ namespace infinitoBack.Services
                 totalTransacciones += transaccion.Monto;
             }
 
-            Resultado res = await _transaccionesService.CrearSaldoCliente(reserva.Id, reserva.IdClientePagador, totalTransacciones);
+            Resultado res = await _transaccionesService.CrearSaldoCliente(
+                reserva.Id,
+                reserva.IdClientePagador,
+                totalTransacciones
+            );
 
-            if (!res.Exitoso) return res;
-
+            if (!res.Exitoso)
+                return res;
 
             return Resultado.Correcto();
         }
@@ -43,7 +46,10 @@ namespace infinitoBack.Services
 
             foreach (Transaccion transaccion in cliente.Transacciones)
             {
-                if(transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion || transaccion.Estado == EstadoTransaccion.UsoDeSaldo)
+                if (
+                    transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion ||
+                    transaccion.Estado == EstadoTransaccion.UsoDeSaldo
+                )
                 {
                     saldo += transaccion.Monto;
                 }
@@ -52,9 +58,11 @@ namespace infinitoBack.Services
             return saldo;
         }
 
-        public async Task<Resultado> CancelarReserva(Reserva reserva) // En este caso se crea transaccion que cancele las anteriores(si las hay) con el estado DevolucionPago
+        public async Task<Resultado> CancelarReserva(Reserva reserva)
         {
-            decimal totalPago = await _reservasService.ConsultarTotalPagoAReserva(reserva);
+            decimal totalPago = await _context.Transacciones
+                .Where(transaccion => transaccion.IdReserva == reserva.Id)
+                .SumAsync(transaccion => transaccion.Monto);
 
             Transaccion transaccionCancelacion = new Transaccion();
 
@@ -62,16 +70,20 @@ namespace infinitoBack.Services
             transaccionCancelacion.IdReserva = reserva.Id;
             transaccionCancelacion.Estado = EstadoTransaccion.CreditoPorAnulacion;
             transaccionCancelacion.FormaDePago = FormaDePago.Transferencia;
-            transaccionCancelacion.Observaciones = $"Cancelacion de reserva {reserva.Id}";
-            transaccionCancelacion.Monto = (totalPago * -1);
-            
+            transaccionCancelacion.Observaciones = $"Cancelación de reserva {reserva.Id}";
+            transaccionCancelacion.Monto = totalPago * -1;
+
             try
             {
                 await _context.Transacciones.AddAsync(transaccionCancelacion);
                 await _context.SaveChangesAsync();
-            } catch (Exception ex)
+            }
+            catch (Exception excepcion)
             {
-                return Resultado.Error("No se pudo agregar la transaccion de cancelacion", TipoError.ErrorInesperado);
+                return Resultado.Error(
+                    "No se pudo agregar la transacción de cancelación",
+                    TipoError.ErrorInesperado
+                );
             }
 
             return Resultado.Correcto();

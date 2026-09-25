@@ -67,6 +67,7 @@ public class PaqueteController : ControllerBase
         paquete.Nombre = paqueteModificado.Nombre;
         paquete.Precio = paqueteModificado.Precio;
         paquete.Descripcion = paqueteModificado.Descripcion;
+        
 
         await _context.SaveChangesAsync();
         return Ok($"El paquete se modifico correctamente");

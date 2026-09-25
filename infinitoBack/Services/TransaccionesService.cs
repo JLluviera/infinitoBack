@@ -19,6 +19,7 @@ namespace infinitoBack.Services
         {
             if (idReserva <= 0) return Resultado.Error("El Id Reserva no es válido", TipoError.ReglaDeNegocio);
 
+
             Transaccion transaccion = new Transaccion();
 
             transaccion.IdCliente = idCliente;
@@ -29,17 +30,16 @@ namespace infinitoBack.Services
             transaccion.Observaciones = "Creado automaticamente por anulacion de reserva";
             transaccion.FormaDePago = FormaDePago.Efectivo;
 
-            try 
+            try
             {
                 _context.Transacciones.Add(transaccion);
                 await _context.SaveChangesAsync();
                 return Resultado.Correcto();
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return Resultado.Error("No se pudo acreditar el saldo", TipoError.ErrorInesperado);
             }
-            
-
         }
     }
 }

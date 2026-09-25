@@ -9,7 +9,7 @@ namespace infinitoBack.Models
         public DateOnly FechaCreacion { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         public FormaDePago FormaDePago { get; set; }
         public string Observaciones { get; set; }
-        public EstadoTransaccion Estado {  get; set; }
+        public EstadoTransaccion Estado{  get; set; }
 
         public int IdReserva {  get; set; }
         public Reserva Reserva { get; set; }
