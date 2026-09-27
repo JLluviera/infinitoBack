@@ -74,7 +74,7 @@ namespace infinitoBack.Services
 
             transaccionCancelacion.IdCliente = reserva.IdClientePagador;
             transaccionCancelacion.IdReserva = reserva.Id;
-            transaccionCancelacion.Estado = EstadoTransaccion.CreditoPorAnulacion;
+            transaccionCancelacion.Estado = EstadoTransaccion.DevolucionPago;
             transaccionCancelacion.FormaDePago = FormaDePago.Transferencia;
             transaccionCancelacion.Observaciones = $"Cancelación de reserva {reserva.Id}";
             transaccionCancelacion.Monto = totalPago * -1;
