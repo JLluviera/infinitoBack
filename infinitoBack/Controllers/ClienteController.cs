@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using infinitoBack.DTOs;
 using infinitoBack.Utils;
 using infinitoBack.Services;
+using Microsoft.Identity.Client;
 
 namespace infinitoBack.Controllers
 {
@@ -129,6 +130,25 @@ namespace infinitoBack.Controllers
             decimal saldo = await _cuentaCorrienteService.ConsultaSaldoDisponibleCliente(cliente);
 
             return Ok(saldo);
+        }
+
+        [HttpGet("deuda/{idCliente}")]
+        public async Task<IActionResult> GetDeudaCliente(int idCliente)
+        {
+            if (idCliente <= 0) return BadRequest("Id de cliente inválido");
+
+            Cliente? cliente = await _context.Clientes.Where(c => c.Id == idCliente)
+                                                .Include(c => c.Transacciones)
+                                                .Include(c => c.ReservasPagas)
+                                                .FirstOrDefaultAsync();
+
+            if (cliente == null) return NotFound("No se encontró cliente con ese Id");
+
+            decimal deuda = 0;
+
+            deuda = await _cuentaCorrienteService.ConsultarDeudaCliente(cliente);
+
+            return Ok(deuda);
         }
     }
 }

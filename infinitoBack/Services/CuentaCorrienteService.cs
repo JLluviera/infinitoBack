@@ -51,7 +51,13 @@ namespace infinitoBack.Services
                     transaccion.Estado == EstadoTransaccion.UsoDeSaldo
                 )
                 {
-                    saldo += transaccion.Monto;
+                    if (transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion)
+                    {
+                        saldo += transaccion.Monto;
+                    } else
+                    { 
+                        saldo -= transaccion.Monto;
+                    }
                 }
             }
 
@@ -87,6 +93,29 @@ namespace infinitoBack.Services
             }
 
             return Resultado.Correcto();
+        }
+
+        public async Task<decimal> ConsultarDeudaCliente (Cliente cliente)
+        {
+            decimal deuda = 0;
+
+            if (cliente.ReservasPagas == null) return deuda;
+
+            foreach(Reserva reserva in cliente.ReservasPagas)
+            {
+                if(reserva.EstadoReserva == EstadoRes.Pendiente)
+                {
+                    deuda += reserva.MontoTotal;
+
+                    foreach (Transaccion transaccion in reserva.Transacciones)
+                    {
+                        if (transaccion.Estado == EstadoTransaccion.Pago || transaccion.Estado == EstadoTransaccion.UsoDeSaldo)
+                            deuda -= transaccion.Monto;
+                    }
+                }
+            }
+
+            return deuda;
         }
     }
 }
