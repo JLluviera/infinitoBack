@@ -47,7 +47,7 @@ namespace infinitoBack.Controllers
                 FechaCreacion = transaccionDatos.FechaCreacion,
                 FormaDePago = transaccionDatos.FormaDePago,
                 Observaciones = transaccionDatos.Observaciones,
-                Estado = EstadoTransaccion.Pago,
+                Estado = transaccionDatos.Estado,
                 IdReserva = transaccionDatos.IdReserva,
                 IdCliente = transaccionDatos.IdCliente,
             };
@@ -71,6 +71,7 @@ namespace infinitoBack.Controllers
             transaccion.Observaciones = transaccionEditada.Observaciones;
             transaccion.IdReserva = transaccionEditada.IdReserva;
             transaccion.IdCliente = transaccionEditada.IdCliente;
+            transaccion.Estado=transaccionEditada.Estado;
 
             await _context.SaveChangesAsync();
             return Ok($"La transaccion con id {id} se actualizo correctamente");
@@ -88,5 +89,6 @@ namespace infinitoBack.Controllers
             await _context.SaveChangesAsync();
             return Ok($"La transaccion con el id {id} se borro correctamente");
         }
+
     }
 }
