@@ -8,6 +8,7 @@ namespace infinitoBack.Enum
         Pago,
         CreditoPorAnulacion,
         UsoDeSaldo,
-        DevolucionPago
+        DevolucionPago,
+        CreditoPorPagoExcedente
     }
 }

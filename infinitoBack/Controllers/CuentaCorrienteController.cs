@@ -37,6 +37,7 @@ namespace infinitoBack.Controllers
 
             return Ok(resultado);
         }
+
         [HttpGet("saldo-disponible/{idCliente}")]
         public async Task<IActionResult> ConsultarSaldoDisponible(int idCliente)
         {

@@ -77,7 +77,6 @@ namespace infinitoBack.Services
 
             if (!resultado.Exitoso)
                 return resultado;
-
             reserva.EstadoReserva = EstadoRes.Cancelada;
 
             try
@@ -117,16 +116,7 @@ namespace infinitoBack.Services
 
                 foreach (Transaccion transaccion in reserva.Transacciones)
                 {
-                    Console.WriteLine(
-                        $"Transaccion {transaccion.Id} - " +
-                        $"Tipo: {transaccion.Estado} - " +
-                        $"Monto: {transaccion.Monto}"
-                    );
-                    Console.WriteLine(
-    $"Comparando transacción {transaccion.Id}: " +
-    $"Estado={transaccion.Estado}, " +
-    $"Monto={transaccion.Monto}"
-);
+
                     if (
                         transaccion.Estado == EstadoTransaccion.Pago ||
                         transaccion.Estado == EstadoTransaccion.UsoDeSaldo
@@ -155,6 +145,7 @@ namespace infinitoBack.Services
                 );
             }
 
+            // Verificar que el cliente exista
             Cliente? cliente = await _context.Clientes
                 .FirstOrDefaultAsync(cliente => cliente.Id == idCliente);
 
@@ -162,10 +153,12 @@ namespace infinitoBack.Services
             {
                 return Resultado.Error(
                     "No se encontró el cliente",
-                    TipoError.ReglaDeNegocio
+                    TipoError.NoEncontrado
                 );
             }
 
+            // Verificar que la reserva exista, pertenezca al cliente
+            // y todavía esté pendiente
             Reserva? reserva = await _context.Reservas
                 .FirstOrDefaultAsync(reserva =>
                     reserva.Id == idReservaNueva &&
@@ -181,6 +174,7 @@ namespace infinitoBack.Services
                 );
             }
 
+            // Calcular saldo disponible del cliente
             decimal saldoDisponible = await _context.Transacciones
                 .Where(transaccion =>
                     transaccion.IdCliente == idCliente &&
@@ -195,6 +189,7 @@ namespace infinitoBack.Services
                         : -transaccion.Monto
                 );
 
+            // Verificar que tenga saldo suficiente
             if (monto > saldoDisponible)
             {
                 return Resultado.Error(
@@ -203,6 +198,7 @@ namespace infinitoBack.Services
                 );
             }
 
+            // Buscar un crédito del cliente para dejarlo como referencia
             Transaccion? transaccionOrigen = await _context.Transacciones
                 .FirstOrDefaultAsync(transaccion =>
                     transaccion.IdCliente == idCliente &&
@@ -213,10 +209,11 @@ namespace infinitoBack.Services
             {
                 return Resultado.Error(
                     "No se encontró una transacción de crédito disponible",
-                    TipoError.ReglaDeNegocio
+                    TipoError.NoEncontrado
                 );
             }
 
+            // Crear la nueva transacción
             Transaccion nuevaTransaccion = new Transaccion
             {
                 IdCliente = idCliente,
@@ -228,11 +225,29 @@ namespace infinitoBack.Services
                 Observaciones =
                     $"Uso de saldo de la transacción {transaccionOrigen.Id}"
             };
+            decimal totalPagado = await _context.Transacciones
+    .Where(transaccion =>
+        transaccion.IdReserva == idReservaNueva &&
+        (
+            transaccion.Estado == EstadoTransaccion.Pago ||
+            transaccion.Estado == EstadoTransaccion.UsoDeSaldo
+        )
+    )
+    .SumAsync(transaccion => transaccion.Monto);
+
+            totalPagado += monto;
+
+            if (totalPagado >= reserva.MontoTotal)
+            {
+                reserva.EstadoReserva = EstadoRes.Confirmada;
+            }
 
             try
             {
                 await _context.Transacciones.AddAsync(nuevaTransaccion);
                 await _context.SaveChangesAsync();
+
+                return Resultado.Correcto();
             }
             catch (Exception)
             {
@@ -241,8 +256,6 @@ namespace infinitoBack.Services
                     TipoError.ErrorInesperado
                 );
             }
-
-            return Resultado.Correcto();
         }
     }
 }
