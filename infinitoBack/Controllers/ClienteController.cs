@@ -96,6 +96,7 @@ namespace infinitoBack.Controllers
             cliente.Telefono = clienteModificado.Telefono;
             cliente.FechaNacimiento = clienteModificado.FechaNacimiento;
             cliente.Ci = clienteModificado.Ci;
+            cliente.FechaVencimientoCi = clienteModificado.FechaVencimientoCi;
 
             await _context.SaveChangesAsync();
             return Ok($"Se modifico el cliente con el id {id}");
