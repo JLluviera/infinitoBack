@@ -38,28 +38,7 @@ namespace infinitoBack.Controllers
             return Ok(transaccion);
         }
         [HttpPost]
-
-        //public async Task<IActionResult> CrearTransaccionPago([FromBody] TransaccionCrearDto transaccionDatos)
-        //{
-        //    Transaccion transaccion = new Transaccion()
-        //    {
-        //        Monto = transaccionDatos.Monto,
-        //        FechaCreacion = transaccionDatos.FechaCreacion,
-        //        FormaDePago = transaccionDatos.FormaDePago,
-        //        Observaciones = transaccionDatos.Observaciones,
-        //        Estado = transaccionDatos.Estado,
-        //        IdReserva = transaccionDatos.IdReserva,
-        //        IdCliente = transaccionDatos.IdCliente,
-        //    };
-
-        //    await _context.Transacciones.AddAsync(transaccion);
-        //    await _context.SaveChangesAsync();
-        //    return Ok(transaccion);
-
-        //}
-        [HttpPost]
-        public async Task<IActionResult> CrearTransaccionPago(
-    [FromBody] TransaccionCrearDto transaccionDatos)
+        public async Task<IActionResult> CrearTransaccionPago([FromBody] TransaccionCrearDto transaccionDatos)
         {
             Reserva? reserva = await _context.Reservas
                 .Include(reserva => reserva.Transacciones)

@@ -150,5 +150,41 @@ namespace infinitoBack.Controllers
 
             return Ok(deuda);
         }
+
+        [HttpGet("paginado")]
+        public async Task<IActionResult> ObtenerClientesPaginado(int? afterId)
+        {
+            int cantidad = 10;
+
+            int ultimoId = afterId ?? 0;
+
+            List<Cliente> clientes = await _context.Clientes
+                .Where(cliente => cliente.Id > ultimoId)
+                .OrderBy(cliente => cliente.Id)
+                .Take(cantidad + 1)
+                .ToListAsync();
+
+            bool hayMas = clientes.Count > cantidad;
+
+            if (hayMas)
+            {
+                clientes.RemoveAt(clientes.Count - 1);
+            }
+
+            int? siguienteCursor = null;
+
+            if (clientes.Count > 0)
+            {
+                siguienteCursor = clientes[clientes.Count - 1].Id;
+            }
+
+            PaginaDTO<Cliente> pagina = new PaginaDTO<Cliente>
+            {
+                Elementos = clientes,
+                SiguienteCursor = siguienteCursor,
+                HayMas = hayMas
+            };
+            return Ok(pagina);
+        }
     }
 }
