@@ -43,6 +43,8 @@ namespace infinitoBack.Controllers
                                                     CantDias = e.CantDias,
                                                     FechaSalida = e.FechaSalida,
                                                     DestinoId = e.DestinoId,
+                                                    PlantillaVehiculoId = e.PlantillaVehiculoId,
+                                                    PlantillaVehiculoNombre = e.PlantillaVehiculo!.NombrePlantilla ?? string.Empty,
                                                     Destino = new DestinoResponseDTO
                                                     {
                                                         Id = e.Destino.Id,
@@ -112,6 +114,11 @@ namespace infinitoBack.Controllers
             }
             ;
 
+    
+            PlantillaVehiculo? plantilla = _context.PlantillasVehiculos.Find(excursion.PlantillaVehiculoId);
+
+            if (plantilla == null) return BadRequest("La plantilla proporcionada no existe");
+
             Excursion nuevaExcursion = new Excursion();
 
             nuevaExcursion.Nombre = excursion.Nombre ?? string.Empty;
@@ -119,6 +126,7 @@ namespace infinitoBack.Controllers
             nuevaExcursion.CantDias = excursion.CantDias;
             nuevaExcursion.FechaSalida = excursion.FechaSalida;
             nuevaExcursion.DestinoId = excursion.DestinoId;
+            nuevaExcursion.PlantillaVehiculoId = excursion.PlantillaVehiculoId;
             
             _context.Excursiones.Add(nuevaExcursion);
             await _context.SaveChangesAsync();
@@ -160,6 +168,9 @@ namespace infinitoBack.Controllers
             {
                 return BadRequest("La fecha de salida no puede ser anterior a la fecha actual");
 
+            } else if (excursion.PlantillaVehiculoId <= 0)
+            {
+                return BadRequest("La plantilla del vehiculo es invalida");
             }
 
             Destino? destino = _context.Destinos.Find(excursionMod.DestinoId);
@@ -170,11 +181,16 @@ namespace infinitoBack.Controllers
             }
             ;
 
+            PlantillaVehiculo? plantilla = _context.PlantillasVehiculos.Find(excursion.PlantillaVehiculoId);
+
+            if (plantilla == null) return BadRequest("La plantilla proporcionada no existe");
+
             excursion.Nombre = excursionMod.Nombre;
             excursion.CantLugares = excursionMod.CantLugares;
             excursion.CantDias = excursionMod.CantDias;
             excursion.FechaSalida = excursionMod.FechaSalida;
             excursion.DestinoId = excursionMod.DestinoId;
+            excursion.PlantillaVehiculoId = excursionMod.PlantillaVehiculoId;
 
             _context.Excursiones.Update(excursion);
             _context.SaveChanges();

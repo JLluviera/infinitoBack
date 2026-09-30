@@ -18,8 +18,14 @@ namespace infinitoBack.Models
 
         public int DestinoId { get; set; }
 
-        public Destino Destino { get; set; }
+        public Destino Destino { get; set; } = null!;
 
         public List<Reserva>? Reservas { get; set; } = new List<Reserva>();
+
+        public int? PlantillaVehiculoId { get; set; }
+
+        public PlantillaVehiculo? PlantillaVehiculo { get; set; } = null!;
+
+        public List<AsignacionAsiento> Asignaciones { get; set; } = new List<AsignacionAsiento>();
     }
 }

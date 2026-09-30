@@ -18,5 +18,10 @@ namespace infinitoBack.ResponseDTOs
 
         public DestinoResponseDTO? Destino { get; set; }
         public int DestinoId { get; set; }
+
+        public PlantillaVehiculoDTO? PlantillaVehiculo { get; set; }
+        public string? PlantillaVehiculoNombre { get; set; }
+
+        public int? PlantillaVehiculoId { get; set; }
     }
 }
