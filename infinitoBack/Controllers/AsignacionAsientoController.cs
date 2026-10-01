@@ -23,29 +23,38 @@ namespace TuProyecto.Controllers
         [HttpGet("{excursionId}/mapa-asientos")]
         public async Task<ActionResult<MapaExcursionResponseDTO>> GetMapaAsientos(int excursionId)
         {
-            // Aseguramos incluir correctamente todas las cadenas de navegación necesarias
-            Excursion? excursion = await _context.Excursiones
+            // 1. Cargar la excursión, vehículos y reservas sin tracking
+            var excursion = await _context.Excursiones
                 .Include(e => e.PlantillaVehiculo)
                     .ThenInclude(p => p.Asientos)
-                .Include(e => e.Asignaciones)
-                    .ThenInclude(a => a.ReservaCliente)
-                        .ThenInclude(rc => rc.Cliente)
                 .Include(e => e.Reservas!)
-                    .ThenInclude(r => r.ReservaClientes) // 🔥 Corregido para que coincida con el SelectMany de abajo
-                        .ThenInclude(rc => rc.Cliente)   // 🔥 Cargamos el cliente de la reserva pendiente
+                    .ThenInclude(r => r.ReservaClientes)
+                        .ThenInclude(rc => rc.Cliente)
                 .FirstOrDefaultAsync(e => e.Id == excursionId);
 
             if (excursion == null) return NotFound("Excursión no encontrada.");
 
+            // 2. Consultar las asignaciones DIRECTAMENTE a la tabla para evitar fallos de navegación o caché
+            var asignaciones = await _context.AsignacionesAsientos
+                .AsNoTracking()
+                .Include(a => a.ReservaCliente)
+                    .ThenInclude(rc => rc.Cliente)
+                .Where(a => a.ExcursionId == excursionId)
+                .ToListAsync();
+
+            // Guardamos los IDs asignados para búsquedas en O(1)
+            var idsReservaClienteAsignados = asignaciones
+                .Select(a => a.ReservaClienteId)
+                .ToHashSet();
+
+            // 3. Mapear asientos con estado de ocupación
             List<AsientoMapaDTO> asientosMapa = new List<AsientoMapaDTO>();
 
-            // 1. Mapear asientos con estado de ocupación de forma segura
-            if (excursion.PlantillaVehiculo != null && excursion.PlantillaVehiculo.Asientos != null)
+            if (excursion.PlantillaVehiculo?.Asientos != null)
             {
                 asientosMapa = excursion.PlantillaVehiculo.Asientos.Select(asiento =>
                 {
-                    var asignacion = excursion.Asignaciones?
-                        .FirstOrDefault(a => a.AsientoId == asiento.Id);
+                    var asignacion = asignaciones.FirstOrDefault(a => a.AsientoId == asiento.Id);
 
                     return new AsientoMapaDTO()
                     {
@@ -57,39 +66,37 @@ namespace TuProyecto.Controllers
                         TipoAsiento = asiento.TipoAsiento,
                         Ocupado = asignacion != null,
                         ReservaClienteId = asignacion?.ReservaClienteId,
-                        // Appendeamos de forma segura usando navegación segura (?.)
                         NombreCliente = asignacion?.ReservaCliente?.Cliente != null
-                            ? $"{asignacion.ReservaCliente.Cliente.Nombre}"
+                            ? $"{asignacion.ReservaCliente.Cliente.Nombre} {asignacion.ReservaCliente.Cliente.Apellido}".Trim()
                             : null
                     };
                 }).ToList();
             }
 
-            // 2. Mapear pasajeros pendientes de forma segura
+            // 4. Mapear pasajeros pendientes
             List<PasajeroPendienteDTO> pasajerosPendientes = new List<PasajeroPendienteDTO>();
 
-            if (excursion.Reservas != null && excursion.Asignaciones != null)
+            if (excursion.Reservas != null)
             {
                 pasajerosPendientes = excursion.Reservas
                     .Where(r => r.ReservaClientes != null)
                     .SelectMany(r => r.ReservaClientes)
-                    .Where(rc => rc.Cliente != null && !excursion.Asignaciones.Any(a => a.ReservaClienteId == rc.ClienteId && a.ExcursionId == excursion.Id))
+                    .Where(rc => rc.Cliente != null && !idsReservaClienteAsignados.Contains(rc.Id)) // Filtro directo sobre HashSet
                     .Select(rc => new PasajeroPendienteDTO
                     {
-                        ReservaClienteId = rc.ClienteId,
+                        ReservaClienteId = rc.Id,
                         ReservaId = rc.ReservaId,
                         ClienteId = rc.ClienteId,
-                        NombreCliente = rc.Cliente?.Nombre ?? "Sin Nombre",   // Evita nulos si el objeto cliente fallara
+                        NombreCliente = rc.Cliente?.Nombre ?? "Sin Nombre",
                         ApellidoCliente = rc.Cliente?.Apellido ?? "Sin Apellido"
                     }).ToList();
             }
 
-            // 3. Construcción del resultado blindada contra PlantillaVehiculo = null
+            // 5. Construcción de la respuesta
             var resultado = new MapaExcursionResponseDTO()
             {
                 ExcursionId = excursion.Id,
                 NombreExcursion = excursion.Nombre,
-                // Usamos ?. e indicamos valores por defecto si el vehículo no está asignado
                 PlantillaVehiculoId = excursion.PlantillaVehiculo?.Id ?? 0,
                 NombrePlantilla = excursion.PlantillaVehiculo?.NombrePlantilla ?? "Sin Vehículo Asignado",
                 TotalPisos = excursion.PlantillaVehiculo?.TotalPisos ?? 0,
@@ -110,7 +117,7 @@ namespace TuProyecto.Controllers
             // Validar que el asiento pertenezca a la plantilla de la excursión
             var excursion = await _context.Excursiones
                 .Include(e => e.PlantillaVehiculo)
-                .FirstOrDefaultAsync(e => e.Id == dto.ExcursionId);
+                .FirstOrDefaultAsync(e => e.Id == dto.ExcursionId); 
 
             if (excursion == null) return NotFound("Excursión no encontrada.");
 
@@ -127,9 +134,14 @@ namespace TuProyecto.Controllers
             if (asientoOcupado)
                 return BadRequest("El asiento ya se encuentra asignado a otro pasajero.");
 
+            ReservaCliente? reservaCliente = await _context.ReservaCliente.Where(rc => rc.Id == dto.ReservaClienteId)
+                                                            .FirstOrDefaultAsync();
+
+            if (reservaCliente == null) return NotFound("No se encontro registro de que el cliente este incluido en la reserva");
+
             // Buscar si el cliente ya tenía un asiento previo en esta excursión para moverlo
-            var asignacionExistente = await _context.AsignacionesAsientos
-                .FirstOrDefaultAsync(a => a.ExcursionId == dto.ExcursionId && a.ReservaClienteId == dto.ReservaClienteId);
+            AsignacionAsiento? asignacionExistente = await _context.AsignacionesAsientos
+            .FirstOrDefaultAsync(a => a.ExcursionId == dto.ExcursionId && a.ReservaClienteId == dto.ReservaClienteId);
 
             if (asignacionExistente != null)
             {

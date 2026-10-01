@@ -29,6 +29,8 @@ namespace infinitoBack.Controllers
                     Id = p.Id,
                     NombrePlantilla = p.NombrePlantilla,
                     TotalPisos = p.TotalPisos,
+                    TotalFilas = p.TotalFilas,
+                    TotalColumnas = p.TotalColumnas,
                     Asientos = p.Asientos.Select(a => new AsientoDTO() {
                         Id = a.Id,
                         NumeroAsiento = a.NumeroAsiento,
@@ -56,6 +58,8 @@ namespace infinitoBack.Controllers
                 Id = plantilla.Id,
                 NombrePlantilla = plantilla.NombrePlantilla,
                 TotalPisos = plantilla.TotalPisos,
+                TotalColumnas = plantilla.TotalColumnas,
+                TotalFilas = plantilla.TotalFilas,
                 Asientos = plantilla.Asientos.Select(a => new AsientoDTO() {
                     Id = a.Id,
                     NumeroAsiento = a.NumeroAsiento,
@@ -76,6 +80,8 @@ namespace infinitoBack.Controllers
             {
                 NombrePlantilla = dto.NombrePlantilla,
                 TotalPisos = dto.TotalPisos,
+                TotalColumnas = dto.TotalColumnas,
+                TotalFilas = dto.TotalFilas,
                 Asientos = dto.Asientos.Select(a => new Asiento
                 {
                     NumeroAsiento = a.NumeroAsiento,
