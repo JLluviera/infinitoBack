@@ -195,5 +195,41 @@ namespace infinitoBack.Controllers
             _context.SaveChanges();
             return Ok("Excursión eliminada correctamente");
         }
+        
+        [HttpGet("paginado")]
+        public async Task<IActionResult> ObtenerExcursionesPaginado(int? despuesId)
+        {
+            int cantidad = 10;
+            int ultimoId = despuesId ?? 0;
+
+            List<Excursion> excursiones = await _context.Excursiones
+                .Where(excursion => excursion.Id > ultimoId)
+                .OrderBy(excursion => excursion.Id)
+                .Take(cantidad + 1)
+                .ToListAsync();
+
+            bool hayMas = excursiones.Count > cantidad;
+
+            if (hayMas)
+            {
+                excursiones.RemoveAt(excursiones.Count - 1);
+            }
+
+            int? siguienteCursor = null;
+
+            if (excursiones.Count > 0)
+            {
+                siguienteCursor = excursiones[^1].Id;
+            }
+
+            PaginaDTO<Excursion> pagina = new PaginaDTO<Excursion>
+            {
+                Elementos = excursiones,
+                SiguienteCursor = siguienteCursor,
+                HayMas = hayMas
+            };
+
+            return Ok(pagina);
+        }
     }
 }

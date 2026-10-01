@@ -152,11 +152,11 @@ namespace infinitoBack.Controllers
         }
 
         [HttpGet("paginado")]
-        public async Task<IActionResult> ObtenerClientesPaginado(int? afterId)
+        public async Task<IActionResult> ObtenerClientesPaginado(int? idDespues)
         {
             int cantidad = 10;
 
-            int ultimoId = afterId ?? 0;
+            int ultimoId = idDespues ?? 0;
 
             List<Cliente> clientes = await _context.Clientes
                 .Where(cliente => cliente.Id > ultimoId)
