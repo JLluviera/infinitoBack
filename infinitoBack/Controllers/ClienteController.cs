@@ -3,6 +3,9 @@ using infinitoBack.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using infinitoBack.DTOs;
+using infinitoBack.Utils;
+using infinitoBack.Services;
+using Microsoft.Identity.Client;
 
 namespace infinitoBack.Controllers
 {
@@ -12,9 +15,12 @@ namespace infinitoBack.Controllers
     {
         private readonly AppDbContext _context;
 
-        public ClienteController(AppDbContext context)
+        private readonly CuentaCorrienteService _cuentaCorrienteService;
+
+        public ClienteController(AppDbContext context, CuentaCorrienteService cuentaCorrienteService)
         {
             _context = context;
+            _cuentaCorrienteService = cuentaCorrienteService;
         }
 
         [HttpGet]
@@ -51,7 +57,6 @@ namespace infinitoBack.Controllers
                 Telefono = datosCliente.Telefono,
                 Ci = datosCliente.Ci,
                 FechaNacimiento = datosCliente.FechaNacimiento,
-                Saldo = 0
             };
 
             await _context.Clientes.AddAsync(cliente);
@@ -92,9 +97,58 @@ namespace infinitoBack.Controllers
             cliente.Telefono = clienteModificado.Telefono;
             cliente.FechaNacimiento = clienteModificado.FechaNacimiento;
             cliente.Ci = clienteModificado.Ci;
+            cliente.FechaVencimientoCi = clienteModificado.FechaVencimientoCi;
 
             await _context.SaveChangesAsync();
             return Ok($"Se modifico el cliente con el id {id}");
+        }
+
+        [HttpGet("ci/{ci}")]
+        public async Task<IActionResult> GetClientePorCi(int ci)
+        {
+            Cliente? cliente = await _context.Clientes.Where(c => c.Ci == ci).FirstOrDefaultAsync();
+
+            if (cliente == null)
+            {
+                return NotFound("No se encontro Cliente con esa cédula");
+            }
+
+            return Ok(cliente);
+        }
+
+        [HttpGet("saldo/{idCliente}")]
+        public async Task<IActionResult> GetSaldoDisponibleCliente(int idCliente)
+        {
+            if (idCliente <= 0) return BadRequest("Id de cliente inválido");
+
+            Cliente? cliente = await _context.Clientes.Where(c => c.Id == idCliente)
+                                                        .Include(c => c.Transacciones)
+                                                        .FirstOrDefaultAsync();
+
+            if (cliente == null) return NotFound("No se encontró cliente con esa Id");
+
+            decimal saldo = await _cuentaCorrienteService.ConsultaSaldoDisponibleCliente(cliente);
+
+            return Ok(saldo);
+        }
+
+        [HttpGet("deuda/{idCliente}")]
+        public async Task<IActionResult> GetDeudaCliente(int idCliente)
+        {
+            if (idCliente <= 0) return BadRequest("Id de cliente inválido");
+
+            Cliente? cliente = await _context.Clientes.Where(c => c.Id == idCliente)
+                                                .Include(c => c.Transacciones)
+                                                .Include(c => c.ReservasPagas)
+                                                .FirstOrDefaultAsync();
+
+            if (cliente == null) return NotFound("No se encontró cliente con ese Id");
+
+            decimal deuda = 0;
+
+            deuda = await _cuentaCorrienteService.ConsultarDeudaCliente(cliente);
+
+            return Ok(deuda);
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using infinitoBack.Data;
 
@@ -11,9 +12,11 @@ using infinitoBack.Data;
 namespace infinitoBack.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260913030201_Cliente-Reservas")]
+    partial class ClienteReservas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,77 +25,19 @@ namespace infinitoBack.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("infinitoBack.Models.Asiento", b =>
+            modelBuilder.Entity("ReservaCliente", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("ClienteId")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Columna")
+                    b.Property<int>("ReservaId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Fila")
-                        .HasColumnType("int");
+                    b.HasKey("ClienteId", "ReservaId");
 
-                    b.Property<string>("NumeroAsiento")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasIndex("ReservaId");
 
-                    b.Property<int>("PisoAsiento")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PlantillaVehiculoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TipoAsiento")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlantillaVehiculoId", "PisoAsiento", "Fila", "Columna")
-                        .IsUnique();
-
-                    b.ToTable("Asientos");
-                });
-
-            modelBuilder.Entity("infinitoBack.Models.AsignacionAsiento", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AsientoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ExcursionId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ExcursionId1")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaAsignacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ReservaClienteId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AsientoId");
-
-                    b.HasIndex("ExcursionId1");
-
-                    b.HasIndex("ReservaClienteId")
-                        .IsUnique();
-
-                    b.HasIndex("ExcursionId", "AsientoId")
-                        .IsUnique();
-
-                    b.ToTable("AsignacionesAsientos");
+                    b.ToTable("ReservaCliente");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Cliente", b =>
@@ -183,14 +128,9 @@ namespace infinitoBack.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PlantillaVehiculoId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DestinoId");
-
-                    b.HasIndex("PlantillaVehiculoId");
 
                     b.ToTable("Excursiones");
                 });
@@ -246,32 +186,6 @@ namespace infinitoBack.Migrations
                     b.ToTable("Paquetes");
                 });
 
-            modelBuilder.Entity("infinitoBack.Models.PlantillaVehiculo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("NombrePlantilla")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TotalColumnas")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalFilas")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalPisos")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PlantillasVehiculos");
-                });
-
             modelBuilder.Entity("infinitoBack.Models.Reserva", b =>
                 {
                     b.Property<int>("Id")
@@ -309,71 +223,6 @@ namespace infinitoBack.Migrations
                     b.ToTable("Reservas");
                 });
 
-            modelBuilder.Entity("infinitoBack.Models.ReservaCliente", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("AsignacionAsientoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ClienteId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ReservaId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClienteId");
-
-                    b.HasIndex("ReservaId", "ClienteId");
-
-                    b.ToTable("ReservaCliente");
-                });
-
-            modelBuilder.Entity("infinitoBack.Models.Transaccion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
-
-                    b.Property<DateOnly>("FechaCreacion")
-                        .HasColumnType("date");
-
-                    b.Property<int>("FormaDePago")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdCliente")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdReserva")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Monto")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Observaciones")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdCliente");
-
-                    b.HasIndex("IdReserva");
-
-                    b.ToTable("Transacciones");
-                });
-
             modelBuilder.Entity("infinitoBack.Models.Usuario", b =>
                 {
                     b.Property<int>("Id")
@@ -407,46 +256,19 @@ namespace infinitoBack.Migrations
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("infinitoBack.Models.Asiento", b =>
+            modelBuilder.Entity("ReservaCliente", b =>
                 {
-                    b.HasOne("infinitoBack.Models.PlantillaVehiculo", "PlantillaVehiculo")
-                        .WithMany("Asientos")
-                        .HasForeignKey("PlantillaVehiculoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlantillaVehiculo");
-                });
-
-            modelBuilder.Entity("infinitoBack.Models.AsignacionAsiento", b =>
-                {
-                    b.HasOne("infinitoBack.Models.Asiento", "Asiento")
+                    b.HasOne("infinitoBack.Models.Cliente", null)
                         .WithMany()
-                        .HasForeignKey("AsientoId")
+                        .HasForeignKey("ClienteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("infinitoBack.Models.Excursion", "Excursion")
+                    b.HasOne("infinitoBack.Models.Reserva", null)
                         .WithMany()
-                        .HasForeignKey("ExcursionId")
+                        .HasForeignKey("ReservaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("infinitoBack.Models.Excursion", null)
-                        .WithMany("Asignaciones")
-                        .HasForeignKey("ExcursionId1");
-
-                    b.HasOne("infinitoBack.Models.ReservaCliente", "ReservaCliente")
-                        .WithOne("AsignacionAsiento")
-                        .HasForeignKey("infinitoBack.Models.AsignacionAsiento", "ReservaClienteId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Asiento");
-
-                    b.Navigation("Excursion");
-
-                    b.Navigation("ReservaCliente");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Destino", b =>
@@ -468,14 +290,7 @@ namespace infinitoBack.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("infinitoBack.Models.PlantillaVehiculo", "PlantillaVehiculo")
-                        .WithMany("Excursiones")
-                        .HasForeignKey("PlantillaVehiculoId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Destino");
-
-                    b.Navigation("PlantillaVehiculo");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Paquete", b =>
@@ -494,7 +309,7 @@ namespace infinitoBack.Migrations
                     b.HasOne("infinitoBack.Models.Cliente", "ClientePagador")
                         .WithMany("ReservasPagas")
                         .HasForeignKey("IdClientePagador")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("infinitoBack.Models.Excursion", "Excursion")
@@ -516,51 +331,9 @@ namespace infinitoBack.Migrations
                     b.Navigation("Paquete");
                 });
 
-            modelBuilder.Entity("infinitoBack.Models.ReservaCliente", b =>
-                {
-                    b.HasOne("infinitoBack.Models.Cliente", "Cliente")
-                        .WithMany("ReservaClientes")
-                        .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("infinitoBack.Models.Reserva", "Reserva")
-                        .WithMany("ReservaClientes")
-                        .HasForeignKey("ReservaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Cliente");
-
-                    b.Navigation("Reserva");
-                });
-
-            modelBuilder.Entity("infinitoBack.Models.Transaccion", b =>
-                {
-                    b.HasOne("infinitoBack.Models.Cliente", "Cliente")
-                        .WithMany("Transacciones")
-                        .HasForeignKey("IdCliente")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("infinitoBack.Models.Reserva", "Reserva")
-                        .WithMany("Transacciones")
-                        .HasForeignKey("IdReserva")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Cliente");
-
-                    b.Navigation("Reserva");
-                });
-
             modelBuilder.Entity("infinitoBack.Models.Cliente", b =>
                 {
-                    b.Navigation("ReservaClientes");
-
                     b.Navigation("ReservasPagas");
-
-                    b.Navigation("Transacciones");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Destino", b =>
@@ -572,33 +345,12 @@ namespace infinitoBack.Migrations
 
             modelBuilder.Entity("infinitoBack.Models.Excursion", b =>
                 {
-                    b.Navigation("Asignaciones");
-
                     b.Navigation("Reservas");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Pais", b =>
                 {
                     b.Navigation("Destinos");
-                });
-
-            modelBuilder.Entity("infinitoBack.Models.PlantillaVehiculo", b =>
-                {
-                    b.Navigation("Asientos");
-
-                    b.Navigation("Excursiones");
-                });
-
-            modelBuilder.Entity("infinitoBack.Models.Reserva", b =>
-                {
-                    b.Navigation("ReservaClientes");
-
-                    b.Navigation("Transacciones");
-                });
-
-            modelBuilder.Entity("infinitoBack.Models.ReservaCliente", b =>
-                {
-                    b.Navigation("AsignacionAsiento");
                 });
 #pragma warning restore 612, 618
         }

@@ -12,5 +12,7 @@ namespace infinitoBack.DTOs
         public int CantLugares { get; set; }
         public string? Descripcion { get; set; }
         public int DestinoId { get; set; }
+
+        public int PlantillaVehiculoId { get; set; }
     }
 }

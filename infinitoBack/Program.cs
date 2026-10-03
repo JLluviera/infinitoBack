@@ -105,6 +105,10 @@ builder.Services.AddOpenApi(options =>
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
+builder.Services.AddScoped<TransaccionesService>();
+builder.Services.AddScoped<ReservasService>();
+builder.Services.AddScoped<CuentaCorrienteService>();
+
 var app = builder.Build();
 
 // ==========================================
