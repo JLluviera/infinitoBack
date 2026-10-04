@@ -392,9 +392,7 @@ namespace infinitoBack.Controllers
         }
 
         [HttpGet("list/paginado")]
-        public async Task<IActionResult> ObtenerReservasPaginado(
-    int? afterId,
-    int? idExcursion)
+        public async Task<IActionResult> ObtenerReservasPaginado(int? afterId,int? idExcursion)
         {
             int cantidad = 10;
             int ultimoId = afterId ?? 0;
