@@ -161,4 +161,40 @@ public async Task<IActionResult> CrearDestino([FromBody] DestinoCrearDto destino
         return Ok(destino);
     }
 
+    [HttpGet("paginado")]
+    public async Task<IActionResult> ObtenerDestinosPaginado(int? idDespues)
+    {
+        int cantidad = 10;
+        int ultimoId = idDespues ?? 0;
+
+        List<Destino> destinos = await _context.Destinos
+            .Where(destino => destino.Id > ultimoId)
+            .OrderBy(destino => destino.Id)
+            .Take(cantidad + 1)
+            .ToListAsync();
+
+        bool hayMas = destinos.Count > cantidad;
+
+        if (hayMas)
+        {
+            destinos.RemoveAt(destinos.Count - 1);
+        }
+
+        int? siguienteCursor = null;
+
+        if (destinos.Count > 0)
+        {
+            siguienteCursor = destinos[destinos.Count - 1].Id;
+        }
+
+        PaginaDTO<Destino> pagina = new PaginaDTO<Destino>
+        {
+            Elementos = destinos,
+            SiguienteCursor = siguienteCursor,
+            HayMas = hayMas
+        };
+
+        return Ok(pagina);
+    }
+
 }

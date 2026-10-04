@@ -1,21 +1,92 @@
+Ôªøusing Audit.Core;
+using Audit.EntityFramework;
 using infinitoBack.Data;
 using infinitoBack.Interfaces;
+using infinitoBack.Models;
 using infinitoBack.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Scalar.AspNetCore;
-using System.Text;
 using Microsoft.OpenApi;
+using Scalar.AspNetCore;
+using System.Security.Claims;
+using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. ConfiguraciÛn de Base de Datos
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+HttpContextAccessor httpContextAccessor = new HttpContextAccessor();
 
+builder.Services.AddSingleton<IHttpContextAccessor>(httpContextAccessor);
+builder.Services.AddHttpContextAccessor();
+
+Audit.Core.Configuration.Setup()
+    .UseEntityFramework(config => config
+        .UseDbContext<infinitoBack.Data.AuditDbContext>()
+        .DisposeDbContext()
+        .AuditTypeMapper(_ => typeof(AuditLog))
+        .AuditEntityAction<AuditLog>((evento, entrada, auditoria) =>
+        {
+            auditoria.NombreEntidad = entrada.EntityType.Name;
+            auditoria.Accion = entrada.Action;
+
+            if (entrada.PrimaryKey.Count > 0)
+            {
+                auditoria.ClavePrimaria =
+                    entrada.PrimaryKey.First().Value?.ToString();
+            }
+
+            auditoria.Cambios = entrada.ToJson();
+            auditoria.Timestamp = evento.StartDate;
+
+            HttpContext? contexto = httpContextAccessor.HttpContext;
+
+            if (contexto != null)
+            {
+                Claim? claimUsuario = contexto.User.FindFirst(
+                    ClaimTypes.NameIdentifier
+                );
+
+                Claim? claimMail = contexto.User.FindFirst(
+                    ClaimTypes.Email
+                );
+
+                if (claimUsuario != null &&
+                    int.TryParse(claimUsuario.Value, out int usuarioId))
+                {
+                    auditoria.UsuarioId = usuarioId;
+                }
+
+                if (claimMail != null)
+                {
+                    auditoria.MailUsuario = claimMail.Value;
+                }
+
+                auditoria.DireccionIp =
+                    contexto.Connection.RemoteIpAddress?.ToString();
+            }
+        })
+        .IgnoreMatchedProperties(true)
+    );
+
+infinitoBack.Data.AuditDbContext.CadenaConexion =
+    builder.Configuration.GetConnectionString("DefaultConnection");
+
+// 1. Configuraci√≥n de Base de Datos
+builder.Services.AddDbContext<infinitoBack.Data.AuditDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    ));
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    )
+    .AddInterceptors(new AuditSaveChangesInterceptor())
+);
 // 2. CORS para tu front en Angular
 builder.Services.AddCors(options =>
 {
@@ -27,7 +98,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 3. Controladores y Filtro de AutorizaciÛn Global
+// 3. Controladores y Filtro de Autorizaci√≥n Global
 builder.Services.AddControllers(options =>
 {
     var policy = new AuthorizationPolicyBuilder()
@@ -40,8 +111,8 @@ builder.Services.AddControllers(options =>
 // Magia pura: detecta tu seguridad y la aplica sin usar OpenApi.Models
 builder.Services.AddEndpointsApiExplorer();
 
-// 5. ConfiguraciÛn de AutenticaciÛn y JWT
-// Al definir esto bien, AddOpenApi() lo lee y genera el esquema Bearer autom·ticamente
+// 5. Configuraci√≥n de Autenticaci√≥n y JWT
+// Al definir esto bien, AddOpenApi() lo lee y genera el esquema Bearer autom√°ticamente
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -86,7 +157,7 @@ builder.Services.AddOpenApi(options =>
             Scheme = "bearer",
             In = ParameterLocation.Header,
             BearerFormat = "JWT",
-            Description = "Introduce tu token JWT aquÌ."
+            Description = "Introduce tu token JWT aqu√≠."
         });
 
         document.Security ??= new List<OpenApiSecurityRequirement>();
@@ -120,7 +191,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
-        // La UI de Scalar te permite cambiar el tÌtulo ac· sin tocar OpenAPI
+        // La UI de Scalar te permite cambiar el t√≠tulo ac√° sin tocar OpenAPI
         options.WithTitle("Mi API Angular");
         options.WithTheme(ScalarTheme.DeepSpace);
     });

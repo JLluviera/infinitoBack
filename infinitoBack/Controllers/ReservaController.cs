@@ -390,5 +390,60 @@ namespace infinitoBack.Controllers
                 }
             }
         }
+
+        [HttpGet("list/paginado")]
+        public async Task<IActionResult> ObtenerReservasPaginado(
+    int? afterId,
+    int? idExcursion)
+        {
+            int cantidad = 10;
+            int ultimoId = afterId ?? 0;
+
+            IQueryable<Reserva> consulta = _context.Reservas;
+
+            // Si se está viendo una excursión específica
+            if (idExcursion.HasValue && idExcursion.Value > 0)
+            {
+                consulta = consulta.Where(r => r.IdExcursion == idExcursion.Value);
+            }
+
+            List<ReservaListResponseDTO> reservas = await consulta
+                .Where(r => r.Id > ultimoId)
+                .OrderBy(r => r.Id)
+                .Select(r => new ReservaListResponseDTO
+                {
+                    Id = r.Id,
+                    IdExcursion = r.IdExcursion,
+                    EstadoReserva = r.EstadoReserva,
+                    NombreCliente = r.ClientePagador.Nombre,
+                    ApellidoCliente = r.ClientePagador.Apellido,
+                    CiCliente = r.ClientePagador.Ci
+                })
+                .Take(cantidad + 1)
+                .ToListAsync();
+
+            bool hayMas = reservas.Count > cantidad;
+
+            if (hayMas)
+            {
+                reservas.RemoveAt(reservas.Count - 1);
+            }
+
+            int? siguienteCursor = null;
+
+            if (reservas.Count > 0)
+            {
+                siguienteCursor = reservas[^1].Id;
+            }
+
+            PaginaDTO<ReservaListResponseDTO> pagina = new PaginaDTO<ReservaListResponseDTO>
+            {
+                Elementos = reservas,
+                SiguienteCursor = siguienteCursor,
+                HayMas = hayMas
+            };
+
+            return Ok(pagina);
+        }
     }
 }

@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using infinitoBack.Models;
+using Audit.EntityFramework;
 
 namespace infinitoBack.Data
 {
@@ -18,7 +19,8 @@ namespace infinitoBack.Data
         public DbSet<Pais> Paises { get; set; }
 
         public DbSet<Reserva> Reservas { get; set; }
-        public DbSet<Transaccion> Transacciones { get; set; } 
+        public DbSet<Transaccion> Transacciones { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         public DbSet<PlantillaVehiculo> PlantillasVehiculos { get; set; }
 
@@ -31,9 +33,9 @@ namespace infinitoBack.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Excursion>()
-                .HasOne(e => e.Destino)
-                .WithMany(d => d.Excursiones)
-                .HasForeignKey(e => e.DestinoId);
+                .HasOne(excursion => excursion.Destino)
+                .WithMany(destino => destino.Excursiones)
+                .HasForeignKey(excursion => excursion.DestinoId);
 
             modelBuilder.Entity<Excursion>()
                 .HasOne(e => e.PlantillaVehiculo)
@@ -42,64 +44,61 @@ namespace infinitoBack.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Destino>()
-                .HasMany(d => d.Paquetes)
-                .WithOne(p => p.Destino)
-                .HasForeignKey(p => p.IdDestino);
+                .HasMany(destino => destino.Paquetes)
+                .WithOne(pais => pais.Destino)
+                .HasForeignKey(pais => pais.IdDestino);
 
             modelBuilder.Entity<Destino>()
-                .HasOne(d => d.Pais)
-                .WithMany(p => p.Destinos)
-                .HasForeignKey(d => d.IdPais);   
+                .HasOne(destino => destino.Pais)
+                .WithMany(pais => pais.Destinos)
+                .HasForeignKey(destino => destino.IdPais);   
 
-            modelBuilder.Entity<Reserva>()
-                .HasOne(r => r.ClientePagador)
-                .WithMany(c => c.ReservasPagas)
-                .HasForeignKey(r => r.IdClientePagador)
+                        modelBuilder.Entity<Reserva>()
+                .HasOne(reserva => reserva.ClientePagador)
+                .WithMany(cliente => cliente.ReservasPagas)
+                .HasForeignKey(reserva => reserva.IdClientePagador)
                 .OnDelete(DeleteBehavior.Restrict);
-               
-            modelBuilder.Entity<Reserva>()
-                .HasOne(r => r.Excursion)
-                .WithMany(e => e.Reservas)
-                .HasForeignKey(r => r.IdExcursion);
 
             modelBuilder.Entity<Reserva>()
-                .HasOne(r => r.Paquete)
+                .HasOne(reserva => reserva.Excursion)
+                .WithMany(excursion => excursion.Reservas)
+                .HasForeignKey(reserva => reserva.IdExcursion);
+
+            modelBuilder.Entity<Reserva>()
+                .HasOne(reserva => reserva.Paquete)
                 .WithMany()
-                .HasForeignKey(r => r.IdPaquete)
+                .HasForeignKey(reserva => reserva.IdPaquete)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Reserva>()
-                .HasMany(r => r.ClientesIncluidos)
-                .WithMany(c => c.ReservasIncluido)
+                .HasMany(reserva => reserva.ClientesIncluidos)
+                .WithMany(cliente => cliente.ReservasIncluido)
                 .UsingEntity<ReservaCliente>(
-                    // Configuración lado Cliente
                     l => l.HasOne(rc => rc.Cliente)
-                          .WithMany(c => c.ReservaClientes)
+                          .WithMany(cliente => cliente.ReservaClientes)
                           .HasForeignKey(rc => rc.ClienteId)
-                          .OnDelete(DeleteBehavior.Restrict), // Bloquea si el cliente está asignado a un asiento
+                          .OnDelete(DeleteBehavior.Restrict),
 
-                    // Configuración lado Reserva
                     r => r.HasOne(rc => rc.Reserva)
-                          .WithMany(res => res.ReservaClientes)
+                          .WithMany(reserva => reserva.ReservaClientes)
                           .HasForeignKey(rc => rc.ReservaId)
-                          .OnDelete(DeleteBehavior.Cascade), // Si se borra la reserva, limpia los asientos automáticamente
+                          .OnDelete(DeleteBehavior.Cascade),
 
-                    // Configuración de la tabla intermedia propiamente dicha
                     j =>
                     {
                         j.HasIndex(rc => new { rc.ReservaId, rc.ClienteId });
                     });
 
             modelBuilder.Entity<Transaccion>()
-                .HasOne(t => t.Cliente)
-                .WithMany(c => c.Transacciones)
-                .HasForeignKey(t => t.IdCliente)
+                .HasOne(transaccion => transaccion.Cliente)
+                .WithMany(cliente => cliente.Transacciones)
+                .HasForeignKey(transaccion => transaccion.IdCliente)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Transaccion>()
-                .HasOne(t => t.Reserva)
-                .WithMany(r => r.Transacciones)
-                .HasForeignKey(t => t.IdReserva)
+                .HasOne(transaccion => transaccion.Reserva)
+                .WithMany(reserva => reserva.Transacciones)
+                .HasForeignKey(transaccion => transaccion.IdReserva)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<ReservaCliente>()

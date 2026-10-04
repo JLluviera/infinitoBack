@@ -38,10 +38,84 @@ namespace infinitoBack.Controllers
             return Ok(transaccion);
         }
         [HttpPost]
-
         public async Task<IActionResult> CrearTransaccionPago([FromBody] TransaccionCrearDto transaccionDatos)
         {
-            Transaccion transaccion = new Transaccion()
+            Reserva? reserva = await _context.Reservas
+                .Include(reserva => reserva.Transacciones)
+                .FirstOrDefaultAsync(reserva =>
+                    reserva.Id == transaccionDatos.IdReserva &&
+                    reserva.IdClientePagador == transaccionDatos.IdCliente
+                );
+
+            if (reserva == null)
+            {
+                return BadRequest("No se encontró la reserva o no pertenece al cliente.");
+            }
+
+            decimal totalPagado = 0;
+
+            foreach (Transaccion transaccion in reserva.Transacciones)
+            {
+                if (
+                    transaccion.Estado == EstadoTransaccion.Pago ||
+                    transaccion.Estado == EstadoTransaccion.UsoDeSaldo
+                )
+                {
+                    totalPagado += transaccion.Monto;
+                }
+            }
+
+            decimal deudaActual = reserva.MontoTotal - totalPagado;
+
+            if (deudaActual < 0)
+            {
+                deudaActual = 0;
+            }
+
+            // El pago supera lo que todavía debe la reserva
+            if (transaccionDatos.Monto > deudaActual)
+            {
+                decimal montoPago = deudaActual;
+                decimal excedente = transaccionDatos.Monto - deudaActual;
+
+                // Si todavía había deuda, registramos la parte correspondiente como Pago
+                if (montoPago > 0)
+                {
+                    Transaccion pago = new Transaccion
+                    {
+                        Monto = montoPago,
+                        FechaCreacion = transaccionDatos.FechaCreacion,
+                        FormaDePago = transaccionDatos.FormaDePago,
+                        Observaciones = transaccionDatos.Observaciones,
+                        Estado = EstadoTransaccion.Pago,
+                        IdReserva = transaccionDatos.IdReserva,
+                        IdCliente = transaccionDatos.IdCliente
+                    };
+
+                    await _context.Transacciones.AddAsync(pago);
+                }
+
+                // El resto queda como saldo a favor
+                Transaccion credito = new Transaccion
+                {
+                    Monto = excedente,
+                    FechaCreacion = transaccionDatos.FechaCreacion,
+                    FormaDePago = transaccionDatos.FormaDePago,
+                    Observaciones = $"Crédito generado por pago excedente de reserva {reserva.Id}",
+                    Estado = EstadoTransaccion.CreditoPorPagoExcedente,
+                    IdReserva = reserva.Id,
+                    IdCliente = transaccionDatos.IdCliente
+                };
+
+                await _context.Transacciones.AddAsync(credito);
+
+                await _context.SaveChangesAsync();
+
+                return Ok(credito);
+            }
+
+            // Pago normal
+            Transaccion transaccionNormal = new Transaccion
             {
                 Monto = transaccionDatos.Monto,
                 FechaCreacion = transaccionDatos.FechaCreacion,
@@ -49,13 +123,13 @@ namespace infinitoBack.Controllers
                 Observaciones = transaccionDatos.Observaciones,
                 Estado = EstadoTransaccion.Pago,
                 IdReserva = transaccionDatos.IdReserva,
-                IdCliente = transaccionDatos.IdCliente,
+                IdCliente = transaccionDatos.IdCliente
             };
 
-            await _context.Transacciones.AddAsync(transaccion);
+            await _context.Transacciones.AddAsync(transaccionNormal);
             await _context.SaveChangesAsync();
-            return Ok(transaccion);
 
+            return Ok(transaccionNormal);
         }
 
         [HttpPut("{id}")]
@@ -71,6 +145,7 @@ namespace infinitoBack.Controllers
             transaccion.Observaciones = transaccionEditada.Observaciones;
             transaccion.IdReserva = transaccionEditada.IdReserva;
             transaccion.IdCliente = transaccionEditada.IdCliente;
+            transaccion.Estado=transaccionEditada.Estado;
 
             await _context.SaveChangesAsync();
             return Ok($"La transaccion con id {id} se actualizo correctamente");
@@ -88,5 +163,6 @@ namespace infinitoBack.Controllers
             await _context.SaveChangesAsync();
             return Ok($"La transaccion con el id {id} se borro correctamente");
         }
+
     }
 }
