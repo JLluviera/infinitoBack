@@ -51,13 +51,13 @@ namespace infinitoBack.Data
             modelBuilder.Entity<Destino>()
                 .HasOne(destino => destino.Pais)
                 .WithMany(pais => pais.Destinos)
-                .HasForeignKey(destino => destino.IdPais);   
+                .HasForeignKey(destino => destino.IdPais);
 
-                        modelBuilder.Entity<Reserva>()
-                .HasOne(reserva => reserva.ClientePagador)
-                .WithMany(cliente => cliente.ReservasPagas)
-                .HasForeignKey(reserva => reserva.IdClientePagador)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Reserva>()
+    .HasOne(reserva => reserva.ClientePagador)
+    .WithMany(cliente => cliente.ReservasPagas)
+    .HasForeignKey(reserva => reserva.IdClientePagador)
+    .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Reserva>()
                 .HasOne(reserva => reserva.Excursion)
@@ -120,10 +120,10 @@ namespace infinitoBack.Data
                 .HasIndex(a => a.ReservaClienteId).IsUnique();
 
             modelBuilder.Entity<AsignacionAsiento>()
-                .HasOne(aa => aa.Excursion)
-                .WithMany()
-                .HasForeignKey(aa => aa.ExcursionId)
-                .OnDelete(DeleteBehavior.Cascade);
+    .HasOne(aa => aa.Excursion)
+    .WithMany(excursion => excursion.Asignaciones)
+    .HasForeignKey(aa => aa.ExcursionId)
+    .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<AsignacionAsiento>()
                 .HasOne(aa => aa.Asiento)

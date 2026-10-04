@@ -132,10 +132,7 @@ namespace infinitoBack.Services
             return deuda;
         }
 
-        public async Task<Resultado> UsarSaldoEnReserva(
-    int idCliente,
-    int idReservaNueva,
-    decimal monto)
+        public async Task<Resultado> UsarSaldoEnReserva(int idCliente,int idReservaNueva,decimal monto)
         {
             if (monto <= 0)
             {
