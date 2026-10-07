@@ -3,17 +3,18 @@ using infinitoBack.Models;
 using infinitoBack.Utils;
 using infinitoBack.Enum;
 using Microsoft.EntityFrameworkCore;
+using infinitoBack.Interfaces;
 
 namespace infinitoBack.Services
 {
-    public class CuentaCorrienteService
+    public class CuentaCorrienteService : ICuentaCorrienteService
     {
         private readonly AppDbContext _context;
-        private readonly TransaccionesService _transaccionesService;
+        private readonly ITransaccionesService _transaccionesService;
 
         public CuentaCorrienteService(
             AppDbContext context,
-            TransaccionesService transaccionesService)
+            ITransaccionesService transaccionesService)
         {
             _context = context;
             _transaccionesService = transaccionesService;
@@ -27,7 +28,7 @@ namespace infinitoBack.Services
             {
                 if (
                     transaccion.Estado == EstadoTransaccion.Pago ||
-                    transaccion.Estado == EstadoTransaccion.UsoDeSaldo
+                    transaccion.Estado == EstadoTransaccion.UsoDeSaldo || transaccion.Estado == EstadoTransaccion.CreditoPorPagoExcedente
                 )
                 {
                     totalTransacciones += transaccion.Monto;
@@ -54,18 +55,15 @@ namespace infinitoBack.Services
             {
                 if (
                     transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion ||
-                    transaccion.Estado == EstadoTransaccion.UsoDeSaldo
+                    transaccion.Estado == EstadoTransaccion.CreditoPorPagoExcedente
                 )
                 {
-                    if (transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion)
-                    {
-                        saldo += transaccion.Monto;
-                    }
-                    else
-                    {
-                        saldo -= transaccion.Monto;
-                    }
+                    saldo += transaccion.Monto;
                 }
+                if (transaccion.Estado == EstadoTransaccion.UsoDeSaldo)
+                {
+                    saldo -= transaccion.Monto;
+                }                
             }
 
             return saldo;
@@ -73,26 +71,13 @@ namespace infinitoBack.Services
 
         public async Task<Resultado> CancelarReserva(Reserva reserva)
         {
-            Resultado resultado = await AcreditarPagos(reserva);
+            Resultado resultado = await _transaccionesService.DevolucionPagos(reserva);
 
             if (!resultado.Exitoso)
                 return resultado;
-            reserva.EstadoReserva = EstadoRes.Cancelada;
+         
+            return Resultado.Correcto();
 
-            try
-            {
-                _context.Reservas.Update(reserva);
-                await _context.SaveChangesAsync();
-
-                return Resultado.Correcto();
-            }
-            catch (Exception excepcion)
-            {
-                return Resultado.Error(
-                    "No se pudo cancelar la reserva",
-                    TipoError.ErrorInesperado
-                );
-            }
         }
 
         public async Task<decimal> ConsultarDeudaCliente(Cliente cliente)
@@ -116,14 +101,14 @@ namespace infinitoBack.Services
 
                 foreach (Transaccion transaccion in reserva.Transacciones)
                 {
-
+                    
                     if (
-                        transaccion.Estado == EstadoTransaccion.Pago ||
+                        transaccion.Estado == EstadoTransaccion.Pago ||   //Es el unico esto posible, ya que en los demas casos deberia de estar cancelada o anulada la reserva para tener transacciones de los demas tipos.
                         transaccion.Estado == EstadoTransaccion.UsoDeSaldo
                     )
                     {
                         deuda -= transaccion.Monto;
-                    }
+                    } 
                 }
 
                 Console.WriteLine($"Deuda acumulada: {deuda}");

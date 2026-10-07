@@ -1,6 +1,7 @@
 ﻿using infinitoBack.Data;
 using infinitoBack.DTOs;
 using infinitoBack.Enum;
+using infinitoBack.Interfaces;
 using infinitoBack.Models;
 using infinitoBack.ResponseDTOs;
 using infinitoBack.Services;
@@ -19,9 +20,9 @@ namespace infinitoBack.Controllers
     public class ReservaController : ControllerBase
     {
         private readonly AppDbContext _context;
-        private readonly ReservasService _reservaService;
+        private readonly IReservasService _reservaService;
 
-        public ReservaController(AppDbContext context, ReservasService reservasService)
+        public ReservaController(AppDbContext context, IReservasService reservasService)
         {
             _context = context;
             _reservaService = reservasService;

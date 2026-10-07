@@ -5,15 +5,16 @@ using infinitoBack.Enum;
 using infinitoBack.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
+using infinitoBack.Interfaces;
 
 namespace infinitoBack.Services
 {
-    public class ReservasService
+    public class ReservasService : IReservasService
     {
         private readonly AppDbContext _context;
-        private readonly CuentaCorrienteService _cuentaCorriente;
+        private readonly ICuentaCorrienteService _cuentaCorriente;
 
-        public ReservasService (AppDbContext context, CuentaCorrienteService cuentaCorriente)
+        public ReservasService (AppDbContext context, ICuentaCorrienteService cuentaCorriente)
         {
             _context = context;
             _cuentaCorriente = cuentaCorriente;

@@ -111,7 +111,7 @@ namespace infinitoBack.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Ok(credito);
+                return Ok("Transacción procesada con éxito");
             }
 
             // Pago normal
@@ -129,7 +129,7 @@ namespace infinitoBack.Controllers
             await _context.Transacciones.AddAsync(transaccionNormal);
             await _context.SaveChangesAsync();
 
-            return Ok(transaccionNormal);
+            return Ok("Transacción procesada con éxito");
         }
 
         [HttpPut("{id}")]

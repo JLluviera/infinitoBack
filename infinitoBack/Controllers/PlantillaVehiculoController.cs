@@ -31,14 +31,7 @@ namespace infinitoBack.Controllers
                     TotalPisos = p.TotalPisos,
                     TotalFilas = p.TotalFilas,
                     TotalColumnas = p.TotalColumnas,
-                    Asientos = p.Asientos.Select(a => new AsientoDTO() {
-                        Id = a.Id,
-                        NumeroAsiento = a.NumeroAsiento,
-                        PisoAsiento = a.PisoAsiento,
-                        Fila = a.Fila,
-                        Columna = a.Columna,
-                        TipoAsiento = a.TipoAsiento
-                    }).ToList()
+                    Asientos = new List<AsientoDTO>()
                 })
                 .ToListAsync();
 

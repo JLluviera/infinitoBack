@@ -1,5 +1,6 @@
 ﻿using infinitoBack.Data;
 using infinitoBack.DTOs;
+using infinitoBack.Interfaces;
 using infinitoBack.Models;
 using infinitoBack.Services;
 using infinitoBack.Utils;
@@ -12,11 +13,11 @@ namespace infinitoBack.Controllers
     [Route("api/[controller]")]
     public class CuentaCorrienteController : ControllerBase
     {
-        private readonly CuentaCorrienteService _cuentaCorrienteService;
+        private readonly ICuentaCorrienteService _cuentaCorrienteService;
         private readonly AppDbContext _context;
 
         public CuentaCorrienteController(
-            CuentaCorrienteService cuentaCorrienteService,
+            ICuentaCorrienteService cuentaCorrienteService,
             AppDbContext context)
         {
             _cuentaCorrienteService = cuentaCorrienteService;

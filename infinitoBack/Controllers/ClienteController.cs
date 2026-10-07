@@ -6,6 +6,7 @@ using infinitoBack.DTOs;
 using infinitoBack.Utils;
 using infinitoBack.Services;
 using Microsoft.Identity.Client;
+using infinitoBack.Interfaces;
 
 namespace infinitoBack.Controllers
 {
@@ -15,9 +16,9 @@ namespace infinitoBack.Controllers
     {
         private readonly AppDbContext _context;
 
-        private readonly CuentaCorrienteService _cuentaCorrienteService;
+        private readonly ICuentaCorrienteService _cuentaCorrienteService;
 
-        public ClienteController(AppDbContext context, CuentaCorrienteService cuentaCorrienteService)
+        public ClienteController(AppDbContext context, ICuentaCorrienteService cuentaCorrienteService)
         {
             _context = context;
             _cuentaCorrienteService = cuentaCorrienteService;
@@ -28,6 +29,11 @@ namespace infinitoBack.Controllers
         public async Task<IActionResult> ListarClientes()
         {
             List<Cliente> clientes = await _context.Clientes.ToListAsync();
+            
+            if (clientes.Count == 0)
+            {
+                return NotFound("No se encontraron clientes");
+            }
             return Ok(clientes);
         }
 
@@ -57,6 +63,7 @@ namespace infinitoBack.Controllers
                 Telefono = datosCliente.Telefono,
                 Ci = datosCliente.Ci,
                 FechaNacimiento = datosCliente.FechaNacimiento,
+                FechaVencimientoCi = datosCliente.FechaVencimientoCi
             };
 
             await _context.Clientes.AddAsync(cliente);
@@ -152,13 +159,14 @@ namespace infinitoBack.Controllers
         }
 
         [HttpGet("paginado")]
-        public async Task<IActionResult> ObtenerClientesPaginado(int? idDespues)
+        public async Task<IActionResult> ObtenerClientesPaginado([FromQuery] int? idDespues)
         {
             int cantidad = 10;
 
             int ultimoId = idDespues ?? 0;
 
             List<Cliente> clientes = await _context.Clientes
+                .AsNoTracking()
                 .Where(cliente => cliente.Id > ultimoId)
                 .OrderBy(cliente => cliente.Id)
                 .Take(cantidad + 1)

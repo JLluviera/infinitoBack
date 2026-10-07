@@ -219,6 +219,7 @@ namespace infinitoBack.Controllers
             int ultimoId = despuesId ?? 0;
 
             List<Excursion> excursiones = await _context.Excursiones
+                .AsNoTracking()
                 .Where(excursion => excursion.Id > ultimoId)
                 .OrderBy(excursion => excursion.Id)
                 .Take(cantidad + 1)
@@ -231,12 +232,9 @@ namespace infinitoBack.Controllers
                 excursiones.RemoveAt(excursiones.Count - 1);
             }
 
-            int? siguienteCursor = null;
-
-            if (excursiones.Count > 0)
-            {
-                siguienteCursor = excursiones[^1].Id;
-            }
+            int? siguienteCursor = (hayMas && excursiones.Count > 0)
+                ? excursiones[^1].Id
+                : null;
 
             PaginaDTO<Excursion> pagina = new PaginaDTO<Excursion>
             {
