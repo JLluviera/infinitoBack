@@ -349,7 +349,7 @@ namespace infinitoBack.Controllers
                         return NotFound("No se encontro la reserva");
                         break;
                     case TipoError.ReglaDeNegocio: 
-                        return BadRequest("Id invalido");
+                        return BadRequest("Id invalido o no es posible anular dado el estado de la reserva");
                         break;
                     default: 
                         return Problem(detail:"No se pudo anular la reserva",

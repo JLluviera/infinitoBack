@@ -45,6 +45,17 @@ namespace infinitoBack.Services
                 }
             }
 
+            foreach (ReservaCliente reservaCliente in reserva.ReservaClientes)
+            {
+                var asignacion = await _context.AsignacionesAsientos
+                                    .Where(a => (a.Id == reservaCliente.AsignacionAsientoId) && (a.ExcursionId == reserva.IdExcursion))
+                                    .FirstOrDefaultAsync();
+                if (asignacion != null)
+                {
+                    _context.AsignacionesAsientos.Remove(asignacion);
+                }
+            }
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -79,6 +90,18 @@ namespace infinitoBack.Services
                     return Resultado.Error("No se pudo cancelar la reserva", TipoError.ErrorInesperado);
                 }
             }
+
+            foreach (ReservaCliente reservaCliente in reserva.ReservaClientes)
+            {
+                var asignacion = await _context.AsignacionesAsientos
+                                    .Where(a => (a.Id == reservaCliente.AsignacionAsientoId) && (a.ExcursionId == reserva.IdExcursion))
+                                    .FirstOrDefaultAsync();
+                if (asignacion != null)
+                {
+                    _context.AsignacionesAsientos.Remove(asignacion);
+                }
+            }
+
             try
             {
                 await _context.SaveChangesAsync();

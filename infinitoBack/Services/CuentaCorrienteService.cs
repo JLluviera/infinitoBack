@@ -55,7 +55,7 @@ namespace infinitoBack.Services
             {
                 if (
                     transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion ||
-                    transaccion.Estado == EstadoTransaccion.CreditoPorPagoExcedente
+                    transaccion.Estado == EstadoTransaccion.CreditoPorPagoExcedente 
                 )
                 {
                     saldo += transaccion.Monto;
@@ -162,11 +162,11 @@ namespace infinitoBack.Services
                     transaccion.IdCliente == idCliente &&
                     (
                         transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion ||
-                        transaccion.Estado == EstadoTransaccion.UsoDeSaldo
+                        transaccion.Estado == EstadoTransaccion.UsoDeSaldo || EstadoTransaccion.CreditoPorPagoExcedente == transaccion.Estado
                     )
                 )
                 .SumAsync(transaccion =>
-                    transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion
+                    (transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion || EstadoTransaccion.CreditoPorPagoExcedente == transaccion.Estado)
                         ? transaccion.Monto
                         : -transaccion.Monto
                 );
@@ -184,7 +184,7 @@ namespace infinitoBack.Services
             Transaccion? transaccionOrigen = await _context.Transacciones
                 .FirstOrDefaultAsync(transaccion =>
                     transaccion.IdCliente == idCliente &&
-                    transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion
+                    (transaccion.Estado == EstadoTransaccion.CreditoPorAnulacion || EstadoTransaccion.CreditoPorPagoExcedente == transaccion.Estado)
                 );
 
             if (transaccionOrigen == null)
@@ -208,14 +208,14 @@ namespace infinitoBack.Services
                     $"Uso de saldo de la transacción {transaccionOrigen.Id}"
             };
             decimal totalPagado = await _context.Transacciones
-    .Where(transaccion =>
-        transaccion.IdReserva == idReservaNueva &&
-        (
-            transaccion.Estado == EstadoTransaccion.Pago ||
-            transaccion.Estado == EstadoTransaccion.UsoDeSaldo
-        )
-    )
-    .SumAsync(transaccion => transaccion.Monto);
+            .Where(transaccion =>
+                transaccion.IdReserva == idReservaNueva &&
+                (
+                    transaccion.Estado == EstadoTransaccion.Pago ||
+                    transaccion.Estado == EstadoTransaccion.UsoDeSaldo
+                )
+            )
+            .SumAsync(transaccion => transaccion.Monto);
 
             totalPagado += monto;
 
