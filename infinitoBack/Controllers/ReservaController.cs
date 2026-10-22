@@ -21,11 +21,13 @@ namespace infinitoBack.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IReservasService _reservaService;
+        private readonly IReservaPdfService _reservaPdfService;
 
-        public ReservaController(AppDbContext context, IReservasService reservasService)
+        public ReservaController(AppDbContext context, IReservasService reservasService,IReservaPdfService reservaPdfService)
         {
             _context = context;
             _reservaService = reservasService;
+            _reservaPdfService = reservaPdfService;
         }
 
         // GET: api/<ReservaController>
@@ -444,5 +446,28 @@ namespace infinitoBack.Controllers
 
             return Ok(pagina);
         }
+
+        [HttpGet("{id:int}/pdf")]
+        public async Task<IActionResult> DescargarPdf(int id)
+        {
+            try
+            {
+                byte[] pdf = await _reservaPdfService.GenerarPdfAsync(id);
+
+                return File(
+                    pdf,
+                    "application/pdf",
+                    $"Reserva_{id}.pdf"
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new
+                {
+                    mensaje = $"No existe la reserva con ID {id}."
+                });
+            }
+        }
+
     }
 }
