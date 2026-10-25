@@ -183,7 +183,11 @@ namespace infinitoBack.Controllers
             await _context.Reservas.AddAsync(reserva);
             await _context.SaveChangesAsync();
 
-            return Ok("Reserva creada exitosamente");
+            return Ok(new
+            {
+                id = reserva.Id,
+                mensaje = "Reserva creada exitosamente"
+            });
         }
 
         // DELETE api/<ReservaController>/5
