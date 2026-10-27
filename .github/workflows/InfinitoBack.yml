@@ -36,6 +36,11 @@ jobs:
       - name: Build
         run: dotnet build "${{ env.PROJECT_FILE }}" --configuration Release --no-restore
 
+      - name: Install EF Core CLI
+        run: |
+          dotnet tool install --global dotnet-ef
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
       - name: Test
         run: dotnet test "${{ env.PROJECT_FILE }}" --no-build || true
 
