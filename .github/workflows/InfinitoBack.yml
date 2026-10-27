@@ -29,6 +29,13 @@ jobs:
     - name: Install EF Core Tool
       run: dotnet tool install --global dotnet-ef
 
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        client-id: ${{ vars.InfinitoBack_CLIENT_ID_D932 }}
+        tenant-id: ${{ vars.InfinitoBack_TENANT_ID_D932 }}
+        subscription-id: ${{ vars.InfinitoBack_SUBSCRIPTION_ID_D932 }}
+
     - name: Apply Migrations for Main DB
       env:
         ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
