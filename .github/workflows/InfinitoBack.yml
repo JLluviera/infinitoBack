@@ -70,6 +70,14 @@ jobs:
           name: webapp-publish
           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.InfinitoBack_CLIENT_ID_6012 }}
+          tenant-id: ${{ vars.InfiniosBack_TENANT_ID_6012 }}
+          subscription-id: ${{ vars.InfinitoBack_SUBSCRIPTION_ID_6012 }}
+          allow-no-subscriptions: true # Evita el error de "No subscriptions found"
+
       - name: Apply EF Core Migrations
         env:
           DB_CONN: ${{ secrets.AZURE_SQL_CONNECTIONSTRING }}
