@@ -32,9 +32,9 @@ jobs:
     - name: Azure Login
       uses: azure/login@v2
       with:
-        client-id: ${{ vars.InfinitoBack_CLIENT_ID_D932 }}
-        tenant-id: ${{ vars.InfinitoBack_TENANT_ID_D932 }}
-        subscription-id: ${{ vars.InfinitoBack_SUBSCRIPTION_ID_D932 }}
+        client-id: ${{ vars.INFINITOBACK_CLIENT_ID_D932 }}
+        tenant-id: ${{ vars.INFINITOBACK_TENANT_ID_D932 }}
+        subscription-id: ${{ vars.INFINITOBACK_SUBSCRIPTION_ID_D932 }}
 
     - name: Apply Migrations for Main DB
       env:
