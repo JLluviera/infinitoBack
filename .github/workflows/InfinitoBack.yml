@@ -1,79 +1,90 @@
-name: Compilar e implementar la aplicación de .NET Core en la aplicación web InfinitoBack
+name: Build, Migrate and Deploy InfinitoBack
+
 on:
   push:
     branches:
-    - Clientes-y-Reservas
+      - Clientes-y-Reservas
+
 permissions:
-  id-token: write
+  id-token: write  # Requerido para autenticación mediante OIDC
   contents: read
+
 env:
-  AZURE_WEBAPP_NAME: InfinitoBack
-  AZURE_WEBAPP_PACKAGE_PATH: infinitoBack/publish
-  CONFIGURATION: Release
-  DOTNET_CORE_VERSION: 10.0.x
-  WORKING_DIRECTORY: infinitoBack
+  AZURE_WEBAPP_NAME: 'InfinitoBack'
+  AZURE_SQL_SERVER: 'infinitoserver.database.windows.net'
+  AZURE_SQL_RESOURCE_GROUP: 'grupo'   # <--- Grupo del SQL Server
+  AZURE_APP_RESOURCE_GROUP: 'infinit_group'   # <--- Grupo del Web App (si aplica)
+  DOTNET_VERSION: '10.0.x'
+  WORKING_DIRECTORY: 'infinitoBack'
+
 jobs:
-  build:
+  build-and-deploy:
+    environment: InfinitoBack_Env
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET SDK
+    - name: Checkout del código
+      uses: actions/checkout@v4
+
+    - name: Configurar SDK de .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
-    - name: Restore
-      run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
-    - name: Build
-      run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
-    - name: Install EF Core Tool
-      run: dotnet tool install --global dotnet-ef
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Azure Login
-      uses: azure/login@v2
-      with:
-        client-id: ${{ vars.INFINITOBACK_CLIENT_ID_D932 }}
-        tenant-id: ${{ vars.INFINITOBACK_TENANT_ID_D932 }}
-        subscription-id: ${{ vars.INFINITOBACK_SUBSCRIPTION_ID_D932 }}
-
-    - name: Apply Migrations for Main DB
-      env:
-        ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
+    # 1. Compilación y publicación del proyecto API
+    - name: Build & Publish API
       run: |
-        cd ${{ env.WORKING_DIRECTORY }}
-        dotnet ef database update --context AppDbContext
+        dotnet restore "${{ env.WORKING_DIRECTORY }}"
+        dotnet publish "${{ env.WORKING_DIRECTORY }}/InfinitoBack.csproj" --configuration Release --output ./publish --no-restore
 
-    - name: Apply Migrations for Audit DB
-      env:
-        ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
+    # 2. Generación de Migration Bundles para AppDbContext y AuditDbContext
+    - name: Generate EF Core Migration Bundles
       run: |
-        cd ${{ env.WORKING_DIRECTORY }}
-        dotnet ef database update --context AuditDbContext
-    - name: Test
-      run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
-    - name: Publish
-      run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
-    - name: Publish Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: webapp
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-    - name: Download artifact from build job
-      uses: actions/download-artifact@v4
-      with:
-        name: webapp
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-    - name: Azure Login
+        dotnet ef migrations bundle --context AppDbContext --project "${{ env.WORKING_DIRECTORY }}/InfinitoBack.csproj" -r linux-x64 --self-contained -o ./publish/bundle-app
+        dotnet ef migrations bundle --context AuditDbContext --project "${{ env.WORKING_DIRECTORY }}/InfinitoBack.csproj" -r linux-x64 --self-contained -o ./publish/bundle-audit
+
+    # 3. Login seguro en Azure mediante OIDC
+    - name: Azure Login (OIDC)
       uses: azure/login@v2
       with:
         client-id: ${{ vars.InfinitoBack_CLIENT_ID_D932 }}
         tenant-id: ${{ vars.InfinitoBack_TENANT_ID_D932 }}
         subscription-id: ${{ vars.InfinitoBack_SUBSCRIPTION_ID_D932 }}
-    - name: Deploy to Azure WebApp
-      uses: azure/webapps-deploy@v2
+
+    # 4. Obtener la IP pública del runner de GitHub y abrir acceso en el Firewall de Azure SQL
+    - name: Whitelist GitHub Runner IP in Azure SQL
+      run: |
+        RUNNER_IP=$(curl -s https://api.ipify.org)
+        echo "Runner IP: $RUNNER_IP"
+        az sql server firewall-rule create \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --server ${{ env.AZURE_SQL_SERVER }} \
+          --name "GitHubRunner-$GITHUB_RUN_ID" \
+          --start-ip-address $RUNNER_IP \
+          --end-ip-address $RUNNER_IP
+
+    # 5. Ejecución de los bundles de migración para ambos contextos
+    - name: Apply EF Core Migrations
+      env:
+        DB_CONN: ${{ secrets.DB_CONNECTION_STRING }}
+      run: |
+        chmod +x ./publish/bundle-app
+        chmod +x ./publish/bundle-audit
+        ./publish/bundle-app --connection "$DB_CONN"
+        ./publish/bundle-audit --connection "$DB_CONN"
+
+    # 6. Limpieza: Eliminar la regla temporal del Firewall (se ejecuta siempre)
+    - name: Remove Runner IP from Azure SQL Firewall
+      if: always()
+      run: |
+        az sql server firewall-rule delete \
+          --resource-group ${{ env.AZURE_SQL_RESOURCE_GROUP }} \
+          --server ${{ env.AZURE_SQL_SERVER }} \
+          --name "GitHubRunner-$GITHUB_RUN_ID" || true
+
+    # 7. Despliegue de los binarios a Azure App Service
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        package: ./publish
