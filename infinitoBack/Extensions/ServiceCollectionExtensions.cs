@@ -36,10 +36,10 @@ public static class ServiceCollectionExtensions
         infinitoBack.Data.AuditDbContext.CadenaConexion = connectionString;
 
         services.AddDbContext<infinitoBack.Data.AuditDbContext>(options =>
-            options.UseSqlServer(connectionString));
+            options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
         services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(connectionString)
+            options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure())
             .AddInterceptors(new AuditSaveChangesInterceptor()));
 
         return services;
