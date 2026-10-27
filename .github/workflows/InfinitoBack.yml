@@ -76,6 +76,7 @@ jobs:
           client-id: ${{ vars.INFINITOBACK_CLIENT_ID_6012 }}
           tenant-id: ${{ vars.INFINITOBACK_TENANT_ID_6012 }} # Mantenido con tu nomenclatura exacta
           subscription-id: ${{ vars.INFINITOBACK_SUBSCRIPTION_ID_6012 }}
+          enable-AzPSSession: false
 
       - name: Whitelist GitHub Runner IP in Azure SQL
         run: |
