@@ -30,14 +30,18 @@ jobs:
       run: dotnet tool install --global dotnet-ef
 
     - name: Apply Migrations for Main DB
+      env:
+        ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
       run: |
         cd ${{ env.WORKING_DIRECTORY }}
-        dotnet ef database update --context AppDbContext --connection "${{ secrets.DB_CONNECTION_STRING }}"
+        dotnet ef database update --context AppDbContext
 
     - name: Apply Migrations for Audit DB
+      env:
+        ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
       run: |
         cd ${{ env.WORKING_DIRECTORY }}
-        dotnet ef database update --context AuditDbContext --connection "${{ secrets.DB_CONNECTION_STRING }}"
+        dotnet ef database update --context AuditDbContext
     - name: Test
       run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
     - name: Publish
