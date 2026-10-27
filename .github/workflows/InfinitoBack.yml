@@ -14,7 +14,7 @@ env:
   AZURE_SQL_SERVER: 'infinitoserver.database.windows.net'
   AZURE_SQL_RESOURCE_GROUP: 'grupo'
   DOTNET_CORE_VERSION: '10.0.x'
-  WORKING_DIRECTORY: 'infinitoBack/infinitoBack' # Ajustado a tu ruta real de proyecto
+  PROJECT_FILE: 'infinitoBack/infinitoBack/InfinitoBack.csproj' # Ruta exacta al archivo .csproj
   AZURE_WEBAPP_PACKAGE_PATH: './publish'
 
 jobs:
@@ -31,22 +31,22 @@ jobs:
           dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
 
       - name: Restore
-        run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+        run: dotnet restore "${{ env.PROJECT_FILE }}"
 
       - name: Build
-        run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration Release --no-restore
+        run: dotnet build "${{ env.PROJECT_FILE }}" --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build || true
+        run: dotnet test "${{ env.PROJECT_FILE }}" --no-build || true
 
       - name: Build & Publish API
         run: |
-          dotnet publish "${{ env.WORKING_DIRECTORY }}/InfinitoBack.csproj" --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-restore
+          dotnet publish "${{ env.PROJECT_FILE }}" --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-restore
 
       - name: Generate EF Core Migration Bundles (AppDbContext & AuditDbContext)
         run: |
-          dotnet ef migrations bundle --context AppDbContext --project "${{ env.WORKING_DIRECTORY }}/InfinitoBack.csproj" -r linux-x64 --self-contained -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/bundle-app
-          dotnet ef migrations bundle --context AuditDbContext --project "${{ env.WORKING_DIRECTORY }}/InfinitoBack.csproj" -r linux-x64 --self-contained -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/bundle-audit
+          dotnet ef migrations bundle --context AppDbContext --project "${{ env.PROJECT_FILE }}" -r linux-x64 --self-contained -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/bundle-app
+          dotnet ef migrations bundle --context AuditDbContext --project "${{ env.PROJECT_FILE }}" -r linux-x64 --self-contained -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/bundle-audit
 
       - name: Publish Artifacts
         uses: actions/upload-artifact@v4
@@ -85,7 +85,7 @@ jobs:
 
       - name: Apply EF Core Migrations
         env:
-          DB_CONN: ${{ secrets.AZURE_SQL_CONNECTIONSTRING }} # Asegúrate de que este sea el nombre de tu secret en GitHub
+          DB_CONN: ${{ secrets.AZURE_SQL_CONNECTIONSTRING }}
         run: |
           chmod +x ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/bundle-app
           chmod +x ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/bundle-audit
