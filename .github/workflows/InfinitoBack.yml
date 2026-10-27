@@ -30,10 +30,14 @@ jobs:
       run: dotnet tool install --global dotnet-ef
 
     - name: Apply Migrations for Main DB
-      run: dotnet ef database update --context AppDbContext --project ./infinitoBack.csproj --connection "${{ secrets.DB_CONNECTION_STRING }}"
+      run: |
+        cd ${{ env.WORKING_DIRECTORY }}
+        dotnet ef database update --context AppDbContext --connection "${{ secrets.DB_CONNECTION_STRING }}"
 
     - name: Apply Migrations for Audit DB
-      run: dotnet ef database update --context AuditDbContext --project ./infinitoBack.csproj --connection "${{ secrets.DB_CONNECTION_STRING }}"
+      run: |
+        cd ${{ env.WORKING_DIRECTORY }}
+        dotnet ef database update --context AuditDbContext --connection "${{ secrets.DB_CONNECTION_STRING }}"
     - name: Test
       run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
     - name: Publish
