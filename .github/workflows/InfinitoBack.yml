@@ -73,9 +73,9 @@ jobs:
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
-          client-id: ${{ vars.InfinitoBack_CLIENT_ID_6012 }}
-          tenant-id: ${{ vars.InfiniosBack_TENANT_ID_6012 }} # Mantenido con tu nomenclatura exacta
-          subscription-id: ${{ vars.InfinitoBack_SUBSCRIPTION_ID_6012 }}
+          client-id: ${{ vars.INFINITOBACK_CLIENT_ID_6012 }}
+          tenant-id: ${{ vars.INFINITOBACK_TENANT_ID_6012 }} # Mantenido con tu nomenclatura exacta
+          subscription-id: ${{ vars.INFINITOBACK_SUBSCRIPTION_ID_6012 }}
 
       - name: Whitelist GitHub Runner IP in Azure SQL
         run: |
