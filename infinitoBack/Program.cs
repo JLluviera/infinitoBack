@@ -22,7 +22,7 @@ builder.Services.AddControllers(options =>
 
 var app = builder.Build();
 
-//Middleware incluyendo la configuracion de Audit.NET
+//Middleware incluyendo la configuracion de Audit.NETr
 app.UseAuditConfiguration();
 
 if (app.Environment.IsDevelopment())
