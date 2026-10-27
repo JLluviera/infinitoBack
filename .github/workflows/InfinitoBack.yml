@@ -14,7 +14,7 @@ env:
   AZURE_SQL_SERVER: 'infinitoserver.database.windows.net'
   AZURE_SQL_RESOURCE_GROUP: 'grupo'
   DOTNET_CORE_VERSION: '10.0.x'
-  PROJECT_FILE: 'infinitoBack/infinitoBack/InfinitoBack.csproj' # Ruta exacta al archivo .csproj
+  PROJECT_FILE: infinitoBack
   AZURE_WEBAPP_PACKAGE_PATH: './publish'
 
 jobs:
