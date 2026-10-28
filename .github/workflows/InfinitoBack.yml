@@ -76,7 +76,6 @@ jobs:
         with:
           client-id: ${{ vars.INFINITOBACK_CLIENT_ID_6012 }}
           tenant-id: ${{ vars.INFINITOBACK_TENANT_ID_6012 }}
-          subscription-id: ${{ vars.INFINITOBACK_SUBSCRIPTION_ID_6012 }}
           allow-no-subscriptions: true
 
       # PASO 2: Aplicar migraciones (Ya tendrá la sesión activa de Azure CLI para obtener el token)
