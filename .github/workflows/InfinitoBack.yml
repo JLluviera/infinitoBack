@@ -74,9 +74,9 @@ jobs:
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
-          client-id: ${{ vars.InfinitoBack_CLIENT_ID_6012 }}
-          tenant-id: ${{ vars.InfiniosBack_TENANT_ID_6012 }}
-          subscription-id: ${{ vars.InfinitoBack_SUBSCRIPTION_ID_6012 }}
+          client-id: ${{ vars.INFINITOBACK_CLIENT_ID_6012 }}
+          tenant-id: ${{ vars.INFINITOBACK_TENANT_ID_6012 }}
+          subscription-id: ${{ vars.INFINITOBACK_SUBSCRIPTION_ID_6012 }}
           allow-no-subscriptions: true
 
       # PASO 2: Aplicar migraciones (Ya tendrá la sesión activa de Azure CLI para obtener el token)
