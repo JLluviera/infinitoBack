@@ -3,11 +3,13 @@ using infinitoBack.DTOs;
 using infinitoBack.Enum;
 using infinitoBack.Interfaces;
 using infinitoBack.Models;
+using infinitoBack.ParamsDTOs;
 using infinitoBack.ResponseDTOs;
 using infinitoBack.Services;
 using infinitoBack.Utils;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using System.Data;
@@ -399,17 +401,27 @@ namespace infinitoBack.Controllers
         }
 
         [HttpGet("list/paginado")]
-        public async Task<IActionResult> ObtenerReservasPaginado(int? afterId,int? idExcursion)
+        public async Task<IActionResult> ObtenerReservasPaginado(int? afterId, int? idExcursion, [FromQuery] ReservaParamsDTO filtros)
         {
             int cantidad = 10;
             int ultimoId = afterId ?? 0;
 
-            IQueryable<Reserva> consulta = _context.Reservas;
+            IQueryable<Reserva> consulta = _context.Reservas.AsQueryable();
 
             // Si se está viendo una excursión específica
             if (idExcursion.HasValue && idExcursion.Value > 0)
             {
                 consulta = consulta.Where(r => r.IdExcursion == idExcursion.Value);
+            }
+
+            if(filtros.CiCliente.HasValue)
+            {
+                consulta = consulta.Where(r => r.ClientePagador.Ci == filtros.CiCliente.Value);
+            }
+
+            if(filtros.EstadoReserva.HasValue)
+            {
+                consulta = consulta.Where(r => r.EstadoReserva == filtros.EstadoReserva.Value);
             }
 
             List<ReservaListResponseDTO> reservas = await consulta
