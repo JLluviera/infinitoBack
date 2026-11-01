@@ -159,14 +159,31 @@ namespace infinitoBack.Controllers
         }
 
         [HttpGet("paginado")]
-        public async Task<IActionResult> ObtenerClientesPaginado([FromQuery] int? idDespues)
+        public async Task<IActionResult> ObtenerClientesPaginado(
+    [FromQuery] int? afterId,
+    [FromQuery] string? busqueda)
         {
             int cantidad = 10;
+            int ultimoId = afterId ?? 0;
 
-            int ultimoId = idDespues ?? 0;
+            IQueryable<Cliente> consulta = _context.Clientes
+                .AsNoTracking();
 
-            List<Cliente> clientes = await _context.Clientes
-                .AsNoTracking()
+            // Aplicar búsqueda por nombre, apellido o CI.
+            if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                string termino = busqueda.Trim();
+
+                consulta = consulta.Where(cliente =>
+                    cliente.Nombre.Contains(termino) ||
+                    cliente.Apellido.Contains(termino) ||
+                    cliente.Ci.ToString().Contains(termino) ||
+                    (cliente.Nombre + " " + cliente.Apellido).Contains(termino)
+                );
+            }
+
+            // Aplicar paginación después del filtro.
+            List<Cliente> clientes = await consulta
                 .Where(cliente => cliente.Id > ultimoId)
                 .OrderBy(cliente => cliente.Id)
                 .Take(cantidad + 1)
@@ -192,6 +209,7 @@ namespace infinitoBack.Controllers
                 SiguienteCursor = siguienteCursor,
                 HayMas = hayMas
             };
+
             return Ok(pagina);
         }
 
