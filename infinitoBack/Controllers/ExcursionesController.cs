@@ -168,9 +168,10 @@ namespace infinitoBack.Controllers
             {
                 return BadRequest("La fecha de salida no puede ser anterior a la fecha actual");
 
-            } else if (excursion.PlantillaVehiculoId <= 0)
+            }
+            else if (excursionMod.PlantillaVehiculoId <= 0)
             {
-                return BadRequest("La plantilla del vehiculo es invalida");
+                return BadRequest("La plantilla del vehículo es inválida");
             }
 
             Destino? destino = _context.Destinos.Find(excursionMod.DestinoId);
@@ -181,7 +182,8 @@ namespace infinitoBack.Controllers
             }
             ;
 
-            PlantillaVehiculo? plantilla = _context.PlantillasVehiculos.Find(excursion.PlantillaVehiculoId);
+            PlantillaVehiculo? plantilla = _context.PlantillasVehiculos
+    .Find(excursionMod.PlantillaVehiculoId);
 
             if (plantilla == null) return BadRequest("La plantilla proporcionada no existe");
 
