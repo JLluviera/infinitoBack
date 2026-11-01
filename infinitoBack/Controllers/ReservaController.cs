@@ -444,13 +444,22 @@ namespace infinitoBack.Controllers
             {
                 consulta = consulta.Where(r => r.IdExcursion == idExcursion.Value);
             }
+                      //Para que filtre coinsidencia exacta 
+            //if (filtros.CiCliente.HasValue)
+            //{
+            //    consulta = consulta.Where(r => r.ClientePagador.Ci == filtros.CiCliente.Value);
+            //}
 
-            if(filtros.CiCliente.HasValue)
+            //Filtra por coinsidencia en numeros consecutivos
+            if (filtros.CiCliente.HasValue)
             {
-                consulta = consulta.Where(r => r.ClientePagador.Ci == filtros.CiCliente.Value);
+                string ciBuscada = filtros.CiCliente.Value.ToString();
+
+                consulta = consulta.Where(r =>
+                    r.ClientePagador.Ci.ToString().Contains(ciBuscada));
             }
 
-            if(filtros.EstadoReserva.HasValue)
+            if (filtros.EstadoReserva.HasValue)
             {
                 consulta = consulta.Where(r => r.EstadoReserva == filtros.EstadoReserva.Value);
             }
