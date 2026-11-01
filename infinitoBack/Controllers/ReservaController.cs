@@ -336,6 +336,37 @@ namespace infinitoBack.Controllers
             }
         }
 
+        [HttpPut("remover/{idRes}/{idCliente}")]
+        public async Task<IActionResult> removerClienteDeReserva(int idRes, int idCliente)
+        {
+            if (idRes == 0 || idCliente == 0) return BadRequest("Los ids no pueden ser igual a 0");
+
+            Reserva? reserva = await _context.Reservas
+                                                .Include(r => r.ClientesIncluidos)
+                                                .Include(r => r.Paquete)
+                                                .Where(r => r.Id == idRes)
+                                                .FirstOrDefaultAsync();
+
+            if (reserva == null) return NotFound("No se encontro reserva con ese ID");
+
+            Cliente? cliente = reserva.ClientesIncluidos!.Find(c => c.Id == idCliente);
+
+            if (cliente == null) return NotFound("No se encontro cliente en la reserva");
+            try
+            {
+                reserva.ClientesIncluidos.Remove(cliente);
+                reserva.MontoTotal = reserva.MontoTotal - reserva.Paquete.Precio;
+                await _context.SaveChangesAsync();
+                return Ok("Cliente removido de la reserva");
+            }
+            catch (DbUpdateException ex)
+            {
+                return Problem(detail: "No se pudo remover al cliente",
+                                title: "Error de Persistencia",
+                                statusCode: StatusCodes.Status500InternalServerError);
+            }
+        }
+
         [HttpPut("anular/{idReserva}")]
         public async Task<IActionResult> AnularReserva (int idReserva)
         {

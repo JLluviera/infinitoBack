@@ -194,5 +194,32 @@ namespace infinitoBack.Controllers
             };
             return Ok(pagina);
         }
+
+        [HttpGet("buscar/{cedula}")]
+        public async Task<IActionResult> BuscarClientePorCedula(int cedula)
+        {
+            if (cedula <= 0)
+            {
+                return BadRequest("Cedula incorrecta");
+            }
+
+            string ciString = cedula.ToString();
+
+            List<Cliente> clientes = await _context.Clientes
+                                                .AsNoTracking()
+                                                .Where(c => c.Ci.ToString().Contains(ciString))
+                                                .Take(10)
+                                                .Select(c => new Cliente
+                                                {
+                                                    Id = c.Id,
+                                                    Nombre = c.Nombre,
+                                                    Apellido = c.Apellido,
+                                                    Ci = c.Ci,
+                                                    Telefono = c.Telefono
+                                                })
+                                                .ToListAsync();
+
+            return Ok(clientes);
+        }
     }
 }
