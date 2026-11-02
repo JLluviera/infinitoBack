@@ -465,8 +465,8 @@ namespace infinitoBack.Controllers
             }
 
             List<ReservaListResponseDTO> reservas = await consulta
-                .Where(r => r.Id > ultimoId)
-                .OrderBy(r => r.Id)
+                .Where(r => r.Id < ultimoId || ultimoId == 0)
+.OrderByDescending(r => r.Id)
                 .Select(r => new ReservaListResponseDTO
                 {
                     Id = r.Id,
