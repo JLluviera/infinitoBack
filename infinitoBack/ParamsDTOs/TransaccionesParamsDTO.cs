@@ -8,6 +8,7 @@
 
         public string? NombreCliente { get; set; }
 
-        public string? ApellidoCliente { get; set; } 
+        public string? ApellidoCliente { get; set; }
+        public string? BusquedaCliente { get; set; }
     }
 }

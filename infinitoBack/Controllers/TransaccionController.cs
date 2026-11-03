@@ -1,10 +1,12 @@
 ﻿using infinitoBack.Data;
-using Microsoft.AspNetCore.Mvc;
-using infinitoBack.Models;
 using infinitoBack.DTOs;
 using infinitoBack.Enum;
-using Microsoft.EntityFrameworkCore;
+using infinitoBack.Interfaces;
+using infinitoBack.Models;
 using infinitoBack.ParamsDTOs;
+using infinitoBack.Utils;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace infinitoBack.Controllers
 {
@@ -13,41 +15,63 @@ namespace infinitoBack.Controllers
     public class TransaccionController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ICuentaCorrienteService _cuentaCorrienteService;
 
-        public TransaccionController(AppDbContext context)
+        public TransaccionController(
+            AppDbContext context,
+            ICuentaCorrienteService cuentaCorrienteService)
         {
             _context = context;
+            _cuentaCorrienteService = cuentaCorrienteService;
         }
 
         [HttpGet]
-
         public async Task<IActionResult> ObtenerTransacciones([FromQuery] TransaccionesParamsDTO filtros)
         {
-            IQueryable<Transaccion> consulta = _context.Transacciones.AsQueryable();
+            IQueryable<Transaccion> consulta =
+                _context.Transacciones.AsQueryable();
 
             if (filtros.IdCliente.HasValue)
             {
-                consulta = consulta.Where(t => t.IdCliente == filtros.IdCliente.Value);
+                consulta = consulta.Where(t =>
+                    t.IdCliente == filtros.IdCliente.Value);
             }
 
             if (filtros.IdReserva.HasValue)
             {
-                consulta = consulta.Where(t => t.IdReserva == filtros.IdReserva.Value);
+                consulta = consulta.Where(t =>
+                    t.IdReserva == filtros.IdReserva.Value);
             }
 
-            if (!string.IsNullOrEmpty(filtros.NombreCliente))
+            if (!string.IsNullOrWhiteSpace(filtros.NombreCliente))
             {
-                consulta = consulta.Where(t => t.Cliente.Nombre.Contains(filtros.NombreCliente));
+                consulta = consulta.Where(t =>
+                    t.Cliente.Nombre.Contains(filtros.NombreCliente));
             }
 
-            if (!string.IsNullOrEmpty(filtros.ApellidoCliente))
+            if (!string.IsNullOrWhiteSpace(filtros.ApellidoCliente))
             {
-                consulta = consulta.Where(t => t.Cliente.Apellido.Contains(filtros.ApellidoCliente));
+                consulta = consulta.Where(t =>
+                    t.Cliente.Apellido.Contains(filtros.ApellidoCliente));
             }
 
-            List<Transaccion> transacciones = await consulta.ToListAsync();
+            if (!string.IsNullOrWhiteSpace(filtros.BusquedaCliente))
+            {
+                string termino = filtros.BusquedaCliente.Trim();
+
+                bool esNumero = int.TryParse(termino, out int ci);
+
+                consulta = consulta.Where(t =>
+                    t.Cliente.Nombre.Contains(termino) ||
+                    t.Cliente.Apellido.Contains(termino) ||
+                    (esNumero && t.Cliente.Ci == ci)
+                );
+            }
+
+            List<Transaccion> transacciones =
+                await consulta.ToListAsync();
+
             return Ok(transacciones);
-
         }
 
         [HttpGet("{id}")]
@@ -75,33 +99,39 @@ namespace infinitoBack.Controllers
                 return BadRequest("No se encontró la reserva o no pertenece al cliente.");
             }
 
+            if (reserva.EstadoReserva == EstadoRes.Cancelada ||
+                reserva.EstadoReserva == EstadoRes.Anulada)
+            {
+                return BadRequest("No se pueden registrar pagos en una reserva cancelada o anulada.");
+            }
+
+            if (transaccionDatos.Monto <= 0)
+            {
+                return BadRequest("El monto del pago debe ser mayor a cero.");
+            }
+
             decimal totalPagado = 0;
 
             foreach (Transaccion transaccion in reserva.Transacciones)
             {
-                if (
-                    transaccion.Estado == EstadoTransaccion.Pago ||
-                    transaccion.Estado == EstadoTransaccion.UsoDeSaldo
-                )
+                if (transaccion.Estado == EstadoTransaccion.Pago ||
+                    transaccion.Estado == EstadoTransaccion.UsoDeSaldo)
                 {
                     totalPagado += transaccion.Monto;
                 }
+                else if (transaccion.Estado == EstadoTransaccion.DevolucionPago)
+                {
+                    totalPagado -= transaccion.Monto;
+                }
             }
 
-            decimal deudaActual = reserva.MontoTotal - totalPagado;
+            decimal deudaActual = Math.Max(0, reserva.MontoTotal - totalPagado);
 
-            if (deudaActual < 0)
-            {
-                deudaActual = 0;
-            }
-
-            // El pago supera lo que todavía debe la reserva
             if (transaccionDatos.Monto > deudaActual)
             {
                 decimal montoPago = deudaActual;
                 decimal excedente = transaccionDatos.Monto - deudaActual;
 
-                // Si todavía había deuda, registramos la parte correspondiente como Pago
                 if (montoPago > 0)
                 {
                     Transaccion pago = new Transaccion
@@ -118,7 +148,6 @@ namespace infinitoBack.Controllers
                     await _context.Transacciones.AddAsync(pago);
                 }
 
-                // El resto queda como saldo a favor
                 Transaccion credito = new Transaccion
                 {
                     Monto = excedente,
@@ -131,31 +160,47 @@ namespace infinitoBack.Controllers
                 };
 
                 await _context.Transacciones.AddAsync(credito);
-
-                await _context.SaveChangesAsync();
-
-                return Ok("Transacción procesada con éxito");
             }
-
-            // Pago normal
-            Transaccion transaccionNormal = new Transaccion
+            else
             {
-                Monto = transaccionDatos.Monto,
-                FechaCreacion = transaccionDatos.FechaCreacion,
-                FormaDePago = transaccionDatos.FormaDePago,
-                Observaciones = transaccionDatos.Observaciones,
-                Estado = EstadoTransaccion.Pago,
-                IdReserva = transaccionDatos.IdReserva,
-                IdCliente = transaccionDatos.IdCliente
-            };
+                Transaccion transaccionNormal = new Transaccion
+                {
+                    Monto = transaccionDatos.Monto,
+                    FechaCreacion = transaccionDatos.FechaCreacion,
+                    FormaDePago = transaccionDatos.FormaDePago,
+                    Observaciones = transaccionDatos.Observaciones,
+                    Estado = EstadoTransaccion.Pago,
+                    IdReserva = transaccionDatos.IdReserva,
+                    IdCliente = transaccionDatos.IdCliente
+                };
 
-            await _context.Transacciones.AddAsync(transaccionNormal);
+                await _context.Transacciones.AddAsync(transaccionNormal);
+            }
+            EstadoRes estadoAnterior = reserva.EstadoReserva;
+
             await _context.SaveChangesAsync();
 
-            return Ok("Transacción procesada con éxito");
+            Resultado resultadoEstado =
+                await _cuentaCorrienteService.ActualizarEstadoReserva(reserva.Id);
+
+            if (!resultadoEstado.Exitoso)
+            {
+                return StatusCode(500, "No se pudo actualizar el estado de la reserva.");
+            }
+
+            bool reservaConfirmada =
+                estadoAnterior == EstadoRes.Pendiente &&
+                reserva.EstadoReserva == EstadoRes.Confirmada;
+
+            return Ok(new
+            {
+                mensaje = "Transacción procesada con éxito",
+                idReserva = reserva.Id,
+                reservaConfirmada
+            });
         }
 
-        [HttpPut("{id}")]
+            [HttpPut("{id}")]
         public async Task<IActionResult> EditarTransaccion(int id, [FromBody] TransaccionCrearDto transaccionEditada)
         {
             Transaccion? transaccion = await _context.Transacciones.FindAsync(id);

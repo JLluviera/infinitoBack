@@ -117,7 +117,7 @@ namespace infinitoBack.Services
             return deuda;
         }
 
-        public async Task<Resultado> UsarSaldoEnReserva(int idCliente,int idReservaNueva,decimal monto)
+        public async Task<Resultado> UsarSaldoEnReserva(int idCliente, int idReservaNueva, decimal monto)
         {
             if (monto <= 0)
             {
@@ -207,37 +207,92 @@ namespace infinitoBack.Services
                 Observaciones =
                     $"Uso de saldo de la transacción {transaccionOrigen.Id}"
             };
-            decimal totalPagado = await _context.Transacciones
-            .Where(transaccion =>
-                transaccion.IdReserva == idReservaNueva &&
-                (
-                    transaccion.Estado == EstadoTransaccion.Pago ||
-                    transaccion.Estado == EstadoTransaccion.UsoDeSaldo
-                )
-            )
-            .SumAsync(transaccion => transaccion.Monto);
 
-            totalPagado += monto;
-
-            if (totalPagado >= reserva.MontoTotal)
-            {
-                reserva.EstadoReserva = EstadoRes.Confirmada;
-            }
 
             try
             {
-                await _context.Transacciones.AddAsync(nuevaTransaccion);
-                await _context.SaveChangesAsync();
+                var estrategia = _context.Database.CreateExecutionStrategy();
+
+                await estrategia.ExecuteAsync(async () =>
+                {
+                    await using var transaccion =
+                        await _context.Database.BeginTransactionAsync();
+
+                    await _context.Transacciones.AddAsync(nuevaTransaccion);
+                    await _context.SaveChangesAsync();
+
+                    Resultado resultadoEstado =
+                        await ActualizarEstadoReserva(idReservaNueva);
+
+                    if (!resultadoEstado.Exitoso)
+                    {
+                        await transaccion.RollbackAsync();
+                        throw new InvalidOperationException(
+    "No se pudo actualizar el estado de la reserva"
+);
+                    }
+
+                    await transaccion.CommitAsync();
+                });
 
                 return Resultado.Correcto();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error al utilizar saldo: {ex}");
+
                 return Resultado.Error(
                     "No se pudo generar la transacción utilizando el saldo",
                     TipoError.ErrorInesperado
                 );
             }
+        }
+
+        public async Task<Resultado> ActualizarEstadoReserva(int idReserva)
+        {
+            Reserva? reserva = await _context.Reservas
+                .Include(r => r.Transacciones)
+                .FirstOrDefaultAsync(r => r.Id == idReserva);
+
+            if (reserva == null)
+            {
+                return Resultado.Error(
+                    "No se encontró la reserva",
+                    TipoError.NoEncontrado
+                );
+            }
+
+            // No modificar reservas canceladas o anuladas.
+            if (reserva.EstadoReserva == EstadoRes.Cancelada ||
+                reserva.EstadoReserva == EstadoRes.Anulada)
+            {
+                return Resultado.Correcto();
+            }
+
+            decimal totalAbonado = 0;
+
+            foreach (var transaccion in reserva.Transacciones)
+            {
+                switch (transaccion.Estado)
+                {
+                    case EstadoTransaccion.Pago:
+                    case EstadoTransaccion.UsoDeSaldo:
+                        totalAbonado += transaccion.Monto;
+                        break;
+
+                    case EstadoTransaccion.DevolucionPago:
+                        totalAbonado -= transaccion.Monto;
+                        break;
+                }
+            }
+
+            reserva.EstadoReserva = totalAbonado >= reserva.MontoTotal
+                ? EstadoRes.Confirmada
+                : EstadoRes.Pendiente;
+
+            await _context.SaveChangesAsync();
+
+            return Resultado.Correcto();
         }
     }
 }
