@@ -182,5 +182,32 @@ namespace TuProyecto.Controllers
 
             return Ok("Asiento liberado correctamente.");
         }
+
+        [HttpGet("{excursionId}/asignaciones-actuales")]
+        public async Task<IActionResult> ObtenerAsignacionesActuales(int excursionId)
+        {
+            var excursionExiste = await _context.Excursiones
+                .AnyAsync(e => e.Id == excursionId);
+
+            if (!excursionExiste)
+                return NotFound("Excursión no encontrada.");
+
+            var asignaciones = await _context.AsignacionesAsientos
+                .AsNoTracking()
+                .Where(a => a.ExcursionId == excursionId)
+                .Select(a => new
+                {
+                    a.Id,
+                    a.ReservaClienteId,
+                    NombreCliente = a.ReservaCliente.Cliente.Nombre,
+                    ApellidoCliente = a.ReservaCliente.Cliente.Apellido,
+                    NumeroAsiento = a.Asiento.NumeroAsiento,
+                    PisoAsiento = a.Asiento.PisoAsiento
+                })
+                .OrderBy(a => a.NumeroAsiento)
+                .ToListAsync();
+
+            return Ok(asignaciones);
+        }
     }
 }

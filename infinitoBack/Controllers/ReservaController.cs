@@ -3,11 +3,13 @@ using infinitoBack.DTOs;
 using infinitoBack.Enum;
 using infinitoBack.Interfaces;
 using infinitoBack.Models;
+using infinitoBack.ParamsDTOs;
 using infinitoBack.ResponseDTOs;
 using infinitoBack.Services;
 using infinitoBack.Utils;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using System.Data;
@@ -334,6 +336,37 @@ namespace infinitoBack.Controllers
             }
         }
 
+        [HttpPut("remover/{idRes}/{idCliente}")]
+        public async Task<IActionResult> removerClienteDeReserva(int idRes, int idCliente)
+        {
+            if (idRes == 0 || idCliente == 0) return BadRequest("Los ids no pueden ser igual a 0");
+
+            Reserva? reserva = await _context.Reservas
+                                                .Include(r => r.ClientesIncluidos)
+                                                .Include(r => r.Paquete)
+                                                .Where(r => r.Id == idRes)
+                                                .FirstOrDefaultAsync();
+
+            if (reserva == null) return NotFound("No se encontro reserva con ese ID");
+
+            Cliente? cliente = reserva.ClientesIncluidos!.Find(c => c.Id == idCliente);
+
+            if (cliente == null) return NotFound("No se encontro cliente en la reserva");
+            try
+            {
+                reserva.ClientesIncluidos.Remove(cliente);
+                reserva.MontoTotal = reserva.MontoTotal - reserva.Paquete.Precio;
+                await _context.SaveChangesAsync();
+                return Ok("Cliente removido de la reserva");
+            }
+            catch (DbUpdateException ex)
+            {
+                return Problem(detail: "No se pudo remover al cliente",
+                                title: "Error de Persistencia",
+                                statusCode: StatusCodes.Status500InternalServerError);
+            }
+        }
+
         [HttpPut("anular/{idReserva}")]
         public async Task<IActionResult> AnularReserva (int idReserva)
         {
@@ -399,22 +432,41 @@ namespace infinitoBack.Controllers
         }
 
         [HttpGet("list/paginado")]
-        public async Task<IActionResult> ObtenerReservasPaginado(int? afterId,int? idExcursion)
+        public async Task<IActionResult> ObtenerReservasPaginado(int? afterId, int? idExcursion, [FromQuery] ReservaParamsDTO filtros)
         {
             int cantidad = 10;
             int ultimoId = afterId ?? 0;
 
-            IQueryable<Reserva> consulta = _context.Reservas;
+            IQueryable<Reserva> consulta = _context.Reservas.AsQueryable();
 
             // Si se está viendo una excursión específica
             if (idExcursion.HasValue && idExcursion.Value > 0)
             {
                 consulta = consulta.Where(r => r.IdExcursion == idExcursion.Value);
             }
+                      //Para que filtre coinsidencia exacta 
+            //if (filtros.CiCliente.HasValue)
+            //{
+            //    consulta = consulta.Where(r => r.ClientePagador.Ci == filtros.CiCliente.Value);
+            //}
+
+            //Filtra por coinsidencia en numeros consecutivos
+            if (filtros.CiCliente.HasValue)
+            {
+                string ciBuscada = filtros.CiCliente.Value.ToString();
+
+                consulta = consulta.Where(r =>
+                    r.ClientePagador.Ci.ToString().Contains(ciBuscada));
+            }
+
+            if (filtros.EstadoReserva.HasValue)
+            {
+                consulta = consulta.Where(r => r.EstadoReserva == filtros.EstadoReserva.Value);
+            }
 
             List<ReservaListResponseDTO> reservas = await consulta
-                .Where(r => r.Id > ultimoId)
-                .OrderBy(r => r.Id)
+                .Where(r => r.Id < ultimoId || ultimoId == 0)
+.OrderByDescending(r => r.Id)
                 .Select(r => new ReservaListResponseDTO
                 {
                     Id = r.Id,

@@ -133,69 +133,93 @@ namespace infinitoBack.Controllers
 
             return Ok("La Excursion se creo correctamente");
         }
-            // PUT api/<ExcursionesController>/5
+        // PUT api/<ExcursionesController>/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] ExcursionResponseDTO excursionMod)
+        public async Task<IActionResult> Put(
+    int id,
+    [FromBody] ExcursionResponseDTO excursionMod)
         {
-            if ( id == 0 )
-            {
+            if (id <= 0)
                 return BadRequest("Debe proporcionar un ID válido");
-            }
-
-            Excursion? excursion = _context.Excursiones.Find(id);
-
-            if (excursion == null)
-            {
-                return NotFound("NO se encontro la excursion");
-            }
 
             if (excursionMod == null)
-            {
                 return BadRequest("Debe proporcionar los datos de la excursión");
-            }
 
-            if (excursionMod!.CantLugares <= 0)
-            {
+            var excursion = await _context.Excursiones.FindAsync(id);
+
+            if (excursion == null)
+                return NotFound("No se encontró la excursión");
+
+            if (excursionMod.CantLugares <= 0)
                 return BadRequest("La cantidad de lugares debe ser mayor a cero");
 
-            }
-            else if (excursionMod.CantDias <= 0)
-            {
+            if (excursionMod.CantDias <= 0)
                 return BadRequest("La cantidad de días debe ser mayor a cero");
 
-            }
-            else if (excursionMod.FechaSalida < DateOnly.FromDateTime(DateTime.Now))
-            {
+            if (excursionMod.FechaSalida < DateOnly.FromDateTime(DateTime.Now))
                 return BadRequest("La fecha de salida no puede ser anterior a la fecha actual");
 
-            } else if (excursion.PlantillaVehiculoId <= 0)
-            {
-                return BadRequest("La plantilla del vehiculo es invalida");
-            }
+            if (excursionMod.PlantillaVehiculoId <= 0)
+                return BadRequest("La plantilla del vehículo es inválida");
 
-            Destino? destino = _context.Destinos.Find(excursionMod.DestinoId);
+            var destino = await _context.Destinos.FindAsync(excursionMod.DestinoId);
 
             if (destino == null)
-            {
                 return BadRequest("El destino proporcionado no existe");
+
+            var plantilla = await _context.PlantillasVehiculos
+                .FindAsync(excursionMod.PlantillaVehiculoId);
+
+            if (plantilla == null)
+                return BadRequest("La plantilla proporcionada no existe");
+
+            bool cambioPlantilla =
+                excursion.PlantillaVehiculoId != excursionMod.PlantillaVehiculoId;
+
+            var estrategia = _context.Database.CreateExecutionStrategy();
+
+            try
+            {
+                await estrategia.ExecuteAsync(async () =>
+                {
+                    await using var transaccion =
+                        await _context.Database.BeginTransactionAsync();
+
+                    if (cambioPlantilla)
+                    {
+                        var asignaciones = await _context.AsignacionesAsientos
+                            .Where(a => a.ExcursionId == id)
+                            .ToListAsync();
+
+                        _context.AsignacionesAsientos.RemoveRange(asignaciones);
+                    }
+
+                    excursion.Nombre = excursionMod.Nombre;
+                    excursion.CantLugares = excursionMod.CantLugares;
+                    excursion.CantDias = excursionMod.CantDias;
+                    excursion.FechaSalida = excursionMod.FechaSalida;
+                    excursion.DestinoId = excursionMod.DestinoId;
+                    excursion.PlantillaVehiculoId = excursionMod.PlantillaVehiculoId;
+
+                    await _context.SaveChangesAsync();
+
+                    await transaccion.CommitAsync();
+                });
+
+                return Ok(cambioPlantilla
+                    ? "Excursión actualizada. Los pasajeros deben reasignarse a los nuevos asientos."
+                    : "Excursión actualizada correctamente.");
             }
-            ;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR AL ACTUALIZAR EXCURSIÓN: {ex}");
 
-            PlantillaVehiculo? plantilla = _context.PlantillasVehiculos.Find(excursion.PlantillaVehiculoId);
-
-            if (plantilla == null) return BadRequest("La plantilla proporcionada no existe");
-
-            excursion.Nombre = excursionMod.Nombre;
-            excursion.CantLugares = excursionMod.CantLugares;
-            excursion.CantDias = excursionMod.CantDias;
-            excursion.FechaSalida = excursionMod.FechaSalida;
-            excursion.DestinoId = excursionMod.DestinoId;
-            excursion.PlantillaVehiculoId = excursionMod.PlantillaVehiculoId;
-
-            _context.Excursiones.Update(excursion);
-            _context.SaveChanges();
-
-            return Ok("Excursión actualizada correctamente");
+                return StatusCode(500, new
+                {
+                    mensaje = "Ocurrió un error al actualizar la excursión.",
+                    detalle = ex.InnerException?.Message ?? ex.Message
+                });
+            }
         }
 
         // DELETE api/<ExcursionesController>/5
