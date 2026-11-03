@@ -34,14 +34,28 @@ namespace infinitoBack.Controllers
 
         // GET: api/<ReservaController>
         [HttpGet]
-        public async Task<IActionResult> ListaReservas()
+        public async Task<IActionResult> ListaReservas([FromQuery] ReservaParamsDTO filtros)
         {
             if (_context.Reservas == null)
             {
                 return NotFound("No se encontraron reservas");
             }
 
-            return Ok(_context.Reservas.Select(r => new ReservaResponseDTO
+            IQueryable<Reserva> query = _context.Reservas.AsQueryable();
+
+            if (filtros.CiCliente.HasValue)
+            {
+                query = query.Where(r => r.ClientePagador.Ci == filtros.CiCliente.Value);
+            };
+
+            if (filtros.EstadoReserva.HasValue)
+            {
+                query = query.Where(r => r.EstadoReserva == filtros.EstadoReserva.Value);
+            }
+
+
+
+            return Ok(query.Select(r => new ReservaResponseDTO
             {
                 Id = r.Id,
                 IdClientePagador = r.IdClientePagador,
@@ -466,7 +480,7 @@ namespace infinitoBack.Controllers
 
             List<ReservaListResponseDTO> reservas = await consulta
                 .Where(r => r.Id < ultimoId || ultimoId == 0)
-.OrderByDescending(r => r.Id)
+                .OrderByDescending(r => r.Id)
                 .Select(r => new ReservaListResponseDTO
                 {
                     Id = r.Id,

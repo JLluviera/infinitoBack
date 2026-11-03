@@ -4,6 +4,7 @@ using infinitoBack.Models;
 using infinitoBack.DTOs;
 using infinitoBack.Enum;
 using Microsoft.EntityFrameworkCore;
+using infinitoBack.ParamsDTOs;
 
 namespace infinitoBack.Controllers
 {
@@ -20,9 +21,31 @@ namespace infinitoBack.Controllers
 
         [HttpGet]
 
-        public async Task<IActionResult> ObtenerTransacciones()
+        public async Task<IActionResult> ObtenerTransacciones([FromQuery] TransaccionesParamsDTO filtros)
         {
-            List<Transaccion> transacciones = await _context.Transacciones.ToListAsync();
+            IQueryable<Transaccion> consulta = _context.Transacciones.AsQueryable();
+
+            if (filtros.IdCliente.HasValue)
+            {
+                consulta = consulta.Where(t => t.IdCliente == filtros.IdCliente.Value);
+            }
+
+            if (filtros.IdReserva.HasValue)
+            {
+                consulta = consulta.Where(t => t.IdReserva == filtros.IdReserva.Value);
+            }
+
+            if (!string.IsNullOrEmpty(filtros.NombreCliente))
+            {
+                consulta = consulta.Where(t => t.Cliente.Nombre.Contains(filtros.NombreCliente));
+            }
+
+            if (!string.IsNullOrEmpty(filtros.ApellidoCliente))
+            {
+                consulta = consulta.Where(t => t.Cliente.Apellido.Contains(filtros.ApellidoCliente));
+            }
+
+            List<Transaccion> transacciones = await consulta.ToListAsync();
             return Ok(transacciones);
 
         }
