@@ -14,5 +14,6 @@ namespace infinitoBack.Interfaces
         Task<decimal> ConsultarDeudaCliente(Cliente cliente);
 
         Task<Resultado> UsarSaldoEnReserva(int idCliente, int idReservaNueva, decimal monto);
+        Task<Resultado> ActualizarEstadoReserva(int idReserva);
     }
 }
