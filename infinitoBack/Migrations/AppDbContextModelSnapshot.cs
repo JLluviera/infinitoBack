@@ -71,9 +71,6 @@ namespace infinitoBack.Migrations
                     b.Property<int>("ExcursionId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ExcursionId1")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("FechaAsignacion")
                         .HasColumnType("datetime2");
 
@@ -84,8 +81,6 @@ namespace infinitoBack.Migrations
 
                     b.HasIndex("AsientoId");
 
-                    b.HasIndex("ExcursionId1");
-
                     b.HasIndex("ReservaClienteId")
                         .IsUnique();
 
@@ -93,6 +88,45 @@ namespace infinitoBack.Migrations
                         .IsUnique();
 
                     b.ToTable("AsignacionesAsientos");
+                });
+
+            modelBuilder.Entity("infinitoBack.Models.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Cambios")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClavePrimaria")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DireccionIp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MailUsuario")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombreEntidad")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("infinitoBack.Models.Cliente", b =>
@@ -427,14 +461,10 @@ namespace infinitoBack.Migrations
                         .IsRequired();
 
                     b.HasOne("infinitoBack.Models.Excursion", "Excursion")
-                        .WithMany()
+                        .WithMany("Asignaciones")
                         .HasForeignKey("ExcursionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("infinitoBack.Models.Excursion", null)
-                        .WithMany("Asignaciones")
-                        .HasForeignKey("ExcursionId1");
 
                     b.HasOne("infinitoBack.Models.ReservaCliente", "ReservaCliente")
                         .WithOne("AsignacionAsiento")

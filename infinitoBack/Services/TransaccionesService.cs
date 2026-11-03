@@ -3,10 +3,11 @@ using infinitoBack.Utils;
 using System.Runtime.CompilerServices;
 using infinitoBack.Enum;
 using infinitoBack.Models;
+using infinitoBack.Interfaces;
 
 namespace infinitoBack.Services
 {
-    public class TransaccionesService
+    public class TransaccionesService : ITransaccionesService
     {
         private AppDbContext _context;
 
@@ -39,6 +40,46 @@ namespace infinitoBack.Services
             catch (Exception ex)
             {
                 return Resultado.Error("No se pudo acreditar el saldo", TipoError.ErrorInesperado);
+            }
+        }
+
+        public async Task<Resultado> DevolucionPagos(Reserva reserva)
+        {
+            decimal totalTransacciones = 0;
+            foreach (Transaccion transaccion in reserva.Transacciones)
+            {
+                if (
+                    transaccion.Estado == EstadoTransaccion.Pago ||
+                    transaccion.Estado == EstadoTransaccion.UsoDeSaldo || EstadoTransaccion.CreditoPorPagoExcedente == transaccion.Estado
+                )
+                {
+                    totalTransacciones += transaccion.Monto;
+                }
+                else if (transaccion.Estado == EstadoTransaccion.DevolucionPago)
+                {
+                    totalTransacciones -= transaccion.Monto;
+                }
+            }
+
+            Transaccion transaccionNueva = new Transaccion();
+
+            transaccionNueva.IdCliente = reserva.IdClientePagador;
+            transaccionNueva.IdReserva = reserva.Id;
+            transaccionNueva.Estado = EstadoTransaccion.DevolucionPago;
+            transaccionNueva.FechaCreacion = DateOnly.FromDateTime(DateTime.Now);
+            transaccionNueva.Monto = (totalTransacciones * -1);
+            transaccionNueva.Observaciones = "Creado automaticamente por cancelación de reserva";
+            transaccionNueva.FormaDePago = FormaDePago.Efectivo;
+
+            try
+            {
+                _context.Transacciones.Add(transaccionNueva);
+                await _context.SaveChangesAsync();
+                return Resultado.Correcto();
+            }
+            catch (Exception ex)
+            {
+                return Resultado.Error("No se pudo devolver el saldo", TipoError.ErrorInesperado);
             }
         }
     }

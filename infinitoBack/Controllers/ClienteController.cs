@@ -6,6 +6,7 @@ using infinitoBack.DTOs;
 using infinitoBack.Utils;
 using infinitoBack.Services;
 using Microsoft.Identity.Client;
+using infinitoBack.Interfaces;
 
 namespace infinitoBack.Controllers
 {
@@ -15,9 +16,9 @@ namespace infinitoBack.Controllers
     {
         private readonly AppDbContext _context;
 
-        private readonly CuentaCorrienteService _cuentaCorrienteService;
+        private readonly ICuentaCorrienteService _cuentaCorrienteService;
 
-        public ClienteController(AppDbContext context, CuentaCorrienteService cuentaCorrienteService)
+        public ClienteController(AppDbContext context, ICuentaCorrienteService cuentaCorrienteService)
         {
             _context = context;
             _cuentaCorrienteService = cuentaCorrienteService;
@@ -28,6 +29,11 @@ namespace infinitoBack.Controllers
         public async Task<IActionResult> ListarClientes()
         {
             List<Cliente> clientes = await _context.Clientes.ToListAsync();
+            
+            if (clientes.Count == 0)
+            {
+                return NotFound("No se encontraron clientes");
+            }
             return Ok(clientes);
         }
 
@@ -57,6 +63,7 @@ namespace infinitoBack.Controllers
                 Telefono = datosCliente.Telefono,
                 Ci = datosCliente.Ci,
                 FechaNacimiento = datosCliente.FechaNacimiento,
+                FechaVencimientoCi = datosCliente.FechaVencimientoCi
             };
 
             await _context.Clientes.AddAsync(cliente);
@@ -152,13 +159,31 @@ namespace infinitoBack.Controllers
         }
 
         [HttpGet("paginado")]
-        public async Task<IActionResult> ObtenerClientesPaginado(int? idDespues)
+        public async Task<IActionResult> ObtenerClientesPaginado(
+    [FromQuery] int? afterId,
+    [FromQuery] string? busqueda)
         {
             int cantidad = 10;
+            int ultimoId = afterId ?? 0;
 
-            int ultimoId = idDespues ?? 0;
+            IQueryable<Cliente> consulta = _context.Clientes
+                .AsNoTracking();
 
-            List<Cliente> clientes = await _context.Clientes
+            // Aplicar búsqueda por nombre, apellido o CI.
+            if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                string termino = busqueda.Trim();
+
+                consulta = consulta.Where(cliente =>
+                    cliente.Nombre.Contains(termino) ||
+                    cliente.Apellido.Contains(termino) ||
+                    cliente.Ci.ToString().Contains(termino) ||
+                    (cliente.Nombre + " " + cliente.Apellido).Contains(termino)
+                );
+            }
+
+            // Aplicar paginación después del filtro.
+            List<Cliente> clientes = await consulta
                 .Where(cliente => cliente.Id > ultimoId)
                 .OrderBy(cliente => cliente.Id)
                 .Take(cantidad + 1)
@@ -184,7 +209,35 @@ namespace infinitoBack.Controllers
                 SiguienteCursor = siguienteCursor,
                 HayMas = hayMas
             };
+
             return Ok(pagina);
+        }
+
+        [HttpGet("buscar/{cedula}")]
+        public async Task<IActionResult> BuscarClientePorCedula(int cedula)
+        {
+            if (cedula <= 0)
+            {
+                return BadRequest("Cedula incorrecta");
+            }
+
+            string ciString = cedula.ToString();
+
+            List<Cliente> clientes = await _context.Clientes
+                                                .AsNoTracking()
+                                                .Where(c => c.Ci.ToString().Contains(ciString))
+                                                .Take(10)
+                                                .Select(c => new Cliente
+                                                {
+                                                    Id = c.Id,
+                                                    Nombre = c.Nombre,
+                                                    Apellido = c.Apellido,
+                                                    Ci = c.Ci,
+                                                    Telefono = c.Telefono
+                                                })
+                                                .ToListAsync();
+
+            return Ok(clientes);
         }
     }
 }

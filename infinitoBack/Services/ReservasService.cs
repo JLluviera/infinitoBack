@@ -5,15 +5,16 @@ using infinitoBack.Enum;
 using infinitoBack.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
+using infinitoBack.Interfaces;
 
 namespace infinitoBack.Services
 {
-    public class ReservasService
+    public class ReservasService : IReservasService
     {
         private readonly AppDbContext _context;
-        private readonly CuentaCorrienteService _cuentaCorriente;
+        private readonly ICuentaCorrienteService _cuentaCorriente;
 
-        public ReservasService (AppDbContext context, CuentaCorrienteService cuentaCorriente)
+        public ReservasService (AppDbContext context, ICuentaCorrienteService cuentaCorriente)
         {
             _context = context;
             _cuentaCorriente = cuentaCorriente;
@@ -41,6 +42,17 @@ namespace infinitoBack.Services
                 if (!res.Exitoso)
                 {
                     return Resultado.Error("No se pudo anular la reserva", TipoError.ErrorInesperado);
+                }
+            }
+
+            foreach (ReservaCliente reservaCliente in reserva.ReservaClientes)
+            {
+                var asignacion = await _context.AsignacionesAsientos
+                                    .Where(a => (a.Id == reservaCliente.AsignacionAsientoId) && (a.ExcursionId == reserva.IdExcursion))
+                                    .FirstOrDefaultAsync();
+                if (asignacion != null)
+                {
+                    _context.AsignacionesAsientos.Remove(asignacion);
                 }
             }
 
@@ -78,6 +90,18 @@ namespace infinitoBack.Services
                     return Resultado.Error("No se pudo cancelar la reserva", TipoError.ErrorInesperado);
                 }
             }
+
+            foreach (ReservaCliente reservaCliente in reserva.ReservaClientes)
+            {
+                var asignacion = await _context.AsignacionesAsientos
+                                    .Where(a => (a.Id == reservaCliente.AsignacionAsientoId) && (a.ExcursionId == reserva.IdExcursion))
+                                    .FirstOrDefaultAsync();
+                if (asignacion != null)
+                {
+                    _context.AsignacionesAsientos.Remove(asignacion);
+                }
+            }
+
             try
             {
                 await _context.SaveChangesAsync();
